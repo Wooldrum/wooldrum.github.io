@@ -1,129 +1,66 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Woodrum's Page</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <style>
-    body {
-      font-family: 'IBM Plex Mono', monospace;
-    }
-    /* Custom styles for the details/summary accordion */
-    details > summary { list-style: none; cursor: pointer; }
-    details > summary::-webkit-details-marker { display: none; }
-    details[open] summary .arrow { transform: rotate(90deg); }
-    .arrow { transition: transform 0.2s ease-in-out; }
-  </style>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          spacing: {
-            '44': '11rem', /* 176px, for custom height */
-          },
-          colors: {
-            'dark-bg': '#0a1020',
-            'dark-panel': '#0d152b',
-            'dark-line': '#22345b',
-            'dark-text': '#e7efff',
-            'dark-muted': '#9fb2de',
-            'dark-accent': '#59a3ff',
-          }
-        }
-      }
-    }
-  </script>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script defer src="assets/main.js"></script>
 </head>
-<body class="bg-dark-bg text-dark-text antialiased">
+<body>
+  <!-- Sticky PFP (the image itself sticks; not its box) -->
+  <img id="pfp" class="pfp" src="assets/img/pfp.jpg" alt="Profile picture" />
 
-  <div class="flex flex-col md:flex-row min-h-screen">
-    <!-- LEFT RAIL / SIDEBAR -->
-    <aside class="w-full md:w-40 bg-dark-panel border-r-2 border-dark-line">
-      <div class="flex flex-row md:flex-col">
-        <!-- Profile Picture -->
-        <div class="h-44 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
-            <a href="#about" class="block">
-              <img src="assets/channels4_profile.jpg" alt="Profile picture" class="h-24 w-24 rounded-full object-fill border-2 border-dark-line hover:border-dark-accent transition-colors">
-            </a>
+  <header class="site-header">
+    <h1>Woodrum's Page</h1>
+    <p>Welcome to my personal corner of the internet.</p>
+  </header>
+
+  <div class="layout">
+    <!-- Sticky sidebar with tiles -->
+    <aside id="sidebar" class="sidebar">
+      <!-- About tile -->
+      <a class="tile" data-nav="about" href="#about" aria-label="Go to About">
+        <div class="tile-thumb">
+          <img src="assets/img/about-tile.jpg" alt="">
         </div>
+        <span>About</span>
+      </a>
 
-        <!-- 88x31 Button Stack -->
-        <nav class="flex flex-row md:flex-col w-full">
-          <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser" class="flex items-center justify-center p-4 border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="assets/zen-browser.png" alt="Zen Browser Button" class="w-[88px] h-[31px] object-fill rounded">
-          </a>
-          <a href="#" title="Button 2" class="flex items-center justify-center p-4 border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+2" alt="88x31 Button" class="w-[88px] h-[31px] object-fill rounded">
-          </a>
-          <a href="#" title="Button 3" class="flex items-center justify-center p-4 border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+3" alt="88x31 Button" class="w-[88px] h-[31px] object-fill rounded">
-          </a>
-           <a href="#" title="Button 4" class="flex items-center justify-center p-4 border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+4" alt="88x31 Button" class="w-[88px] h-[31px] object-fill rounded">
-          </a>
-        </nav>
-      </div>
+      <!-- Blog tile (clicking toggles Blog mode) -->
+      <a class="tile" data-nav="blog" href="#blog" aria-label="Go to Blog">
+        <div class="tile-thumb">
+          <img src="assets/img/blog-tile.jpg" alt="">
+        </div>
+        <span>Blog</span>
+      </a>
     </aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1">
-        <!-- Header -->
-        <header class="h-44 px-6 md:px-10 border-b-2 border-dark-line flex flex-col justify-center">
-            <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
-            <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
-        </header>
+    <main class="content">
+      <!-- ABOUT -->
+      <section id="about" class="section">
+        <h2>About Me</h2>
+        <p>I'm Woodrum. I make things, break things, then write about it. This site is intentionally simple—just HTML, CSS, a dash of JS.</p>
+      </section>
 
-        <!-- About Me Section -->
-        <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
-            <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
-            <p class="text-dark-muted leading-relaxed max-w-prose">
-              I'm Woodrum. I make things, break things, then write about it. This site is intentionally simple: no frameworks, no vibes-police.
-            </p>
-        </section>
+      <!-- BLOG -->
+      <section id="blog" class="section">
+        <h2>Blog</h2>
+        <!-- “Click to Expand” removed on purpose -->
 
-        <!-- Blog Section (Expandable) -->
-        <section id="blog" class="p-6 md:p-10">
-            <details open>
-                <summary class="flex justify-between items-center">
-                    <h2 class="text-3xl font-bold text-white">Blog</h2>
-                    <div class="flex items-center text-dark-muted">
-                        <span class="mr-2 hidden sm:inline">Click to Expand</span>
-                        <svg class="w-6 h-6 arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                    </div>
-                </summary>
-                
-                <!-- Blog Post List -->
-                <div class="mt-8 space-y-8">
-                    <article class="border-t border-dark-line pt-6">
-                        <h3 class="text-2xl font-semibold text-dark-accent hover:underline">
-                            <a href="#">My First Post: Setting Up GitHub Pages</a>
-                        </h3>
-                        <p class="text-sm text-dark-muted mt-1">August 7, 2025</p>
-                        <p class="mt-3 text-dark-muted leading-relaxed max-w-prose">
-                            How this site went from nothing to live in five minutes.
-                        </p>
-                    </article>
+        <article class="post">
+          <h3>My First Post: Setting Up GitHub Pages</h3>
+          <time datetime="2025-08-07">August 7, 2025</time>
+          <p>How this site went from nothing to live in minutes.</p>
+        </article>
 
-                    <article class="border-t border-dark-line pt-6">
-                        <h3 class="text-2xl font-semibold text-dark-accent hover:underline">
-                            <a href="#">A Deep Dive into Tailwind CSS</a>
-                        </h3>
-                        <p class="text-sm text-dark-muted mt-1">August 6, 2025</p>
-                        <p class="mt-3 text-dark-muted leading-relaxed max-w-prose">
-                            Why I keep coming back to it for projects like this.
-                        </p>
-                    </article>
-                </div>
-            </details>
-        </section>
+        <article class="post">
+          <h3>A Deep Dive into Tailwind CSS</h3>
+          <time datetime="2025-08-06">August 6, 2025</time>
+          <p>Why I keep coming back to it for projects like this.</p>
+        </article>
+      </section>
     </main>
   </div>
-
 </body>
 </html>
