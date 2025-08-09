@@ -1,11 +1,25 @@
 title: "Woodrum's Page"
 url: "https://wooldrum.github.io"
-baseurl: ""   # user sites keep this empty
+baseurl: ""          # keep empty for user sites (wooldrum.github.io)
+
+timezone: America/New_York
 
 markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+
 theme: null
 
 permalink: /blog/:year/:month/:day/:slug/
+
+excerpt_separator: "<!--more-->"
+
+collections:
+  posts:
+    output: true
+    permalink: /blog/:year/:month/:day/:slug/
 
 defaults:
   - scope:
@@ -14,3 +28,18 @@ defaults:
     values:
       layout: "post"
       author: "Woodrum"
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+exclude:
+  - node_modules
+  - package.json
+  - package-lock.json
+  - Gemfile.lock
+  - README.md
+  - api
+  - .vercel
+  - .github
