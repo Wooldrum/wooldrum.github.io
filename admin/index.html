@@ -1,24 +1,38 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="robots" content="noindex" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Editor — Woodrum</title>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Editor — Woodrum</title>
 
-    <!-- Font to match site -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Our admin shell overrides -->
-    <link rel="stylesheet" href="/admin/admin.css" />
-  </head>
-  <body>
-    <!-- Decap -->
-    <script src="https://unpkg.com/decap-cms@latest/dist/decap-cms.js"></script>
+  <!-- Our theme (kept light-touch) -->
+  <link rel="stylesheet" href="/admin/admin.css?v=3">
+  <!-- Preview styles for the right-hand post preview -->
+  <link rel="stylesheet" href="/admin/preview.css?v=2">
+</head>
+<body>
+  <!-- Decap CMS -->
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
-    <!-- Register preview style + tweaks -->
-    <script defer src="/admin/admin.js"></script>
-  </body>
+  <script>
+    // Make sure the preview pane uses our dark site typography
+    CMS.registerPreviewStyle('/admin/preview.css?v=2');
+
+    // Runtime hotfix: if MUI/Decap injects light backgrounds later, we override them.
+    const s = document.createElement('style');
+    s.id = 'woodrum-hotfix';
+    s.textContent = `
+      html,body,#root,#nc-root,.nc-app{background:#0b1225 !important;color:#e7efff !important}
+      #root>div,#root>div>div{background:#0b1225 !important}
+      /* Any "paper"/container things must be transparent/dark */
+      .MuiContainer-root,.MuiBox-root,.MuiGrid-root,.MuiStack-root{background:transparent !important}
+      .MuiPaper-root,.MuiPopover-paper,.MuiDrawer-paper,.MuiMenu-paper{background:#101a36 !important;border:1px solid #22345b !important;color:#e7efff !important}
+    `;
+    document.head.appendChild(s);
+  </script>
+</body>
 </html>
