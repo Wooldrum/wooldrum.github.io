@@ -1,4 +1,4 @@
-/* Woodrum Admin Theme v2.3 — stable dark everywhere, no harsh whites */
+/* Woodrum Admin Theme v2.4 — stable dark everywhere, no harsh whites */
 
 :root{
   --bg:#0b1225; --panel:#0e1730; --panel-2:#101a36; --line:#22345b;
@@ -47,7 +47,16 @@ html,body,#root,#nc-root,.nc-app{
   border-radius:var(--rs) !important;
 }
 
-/* Entry list cards */
+/* === Core content area cards, lists, and papers (make dark, always) === */
+.MuiPaper-root,.MuiPopover-paper,.MuiMenu-paper,.MuiDrawer-paper,.MuiCard-root{
+  background:var(--panel-2) !important;
+  color:var(--text) !important;
+  border:1px solid var(--line) !important;
+  border-radius:var(--r) !important;
+  box-shadow:var(--shadow) !important;
+}
+
+/* Entry list cards (detail view tiles) */
 [data-testid="entry-card"],[class*="EntryCard"]{
   background:var(--panel) !important;
   border:1px solid var(--line) !important;
@@ -148,14 +157,7 @@ button,[role="button"],.MuiButton-root{
 .MuiSwitch-thumb{background-color:var(--accent) !important}
 .Mui-checked + .MuiSwitch-track{background-color:rgba(89,163,255,.4) !important}
 
-/* Menus / popovers / app papers */
-.MuiPaper-root,.MuiPopover-paper,.MuiMenu-paper,.MuiDrawer-paper{
-  background:var(--panel-2) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--r) !important;
-  box-shadow:var(--shadow) !important;
-}
+/* Menus / popovers */
 .MuiMenuItem-root{color:var(--text) !important}
 .MuiMenuItem-root:hover{background:rgba(255,255,255,.06) !important}
 
@@ -193,8 +195,46 @@ a:hover{text-decoration:underline}
 *::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
 *::-webkit-scrollbar-track{background:transparent}
 
-/* Safety net: any inlined white gets darkened */
+/* Safety nets for inline whites */
 *[style*="background: rgb(255, 255, 255)"],
-*[style*="background-color: rgb(255, 255, 255)"]{
+*[style*="background-color: rgb(255, 255, 255)"],
+*[style*="#fff"], *[style*="#FFF"], *[style*="#ffffff"], *[style*="#FFFFFF"]{
   background-color:#0b1631 !important; color:var(--text) !important;
+}
+
+/* === v2.4 specific: collections box, "Posts" header, and entry title tiles === */
+
+/* Collections panel + search wrapper */
+#root [data-testid="sidebar"] .MuiPaper-root,
+#root [data-testid="sidebar"] .MuiList-root,
+#root [data-testid="sidebar"] .MuiListItem-root,
+#root [data-testid="sidebar"] .MuiListItemButton-root,
+#root [data-testid="sidebar"] .MuiBox-root{
+  background:var(--panel-2) !important;
+  color:var(--text) !important;
+  border:1px solid var(--line) !important;
+  border-radius:var(--r) !important;
+}
+
+/* "Posts" list header/toolbar area */
+#root [data-testid="collection-container"] .MuiPaper-root,
+#root [data-testid="collection-container"] .MuiToolbar-root,
+#root [data-testid="collection-container"] .MuiBox-root{
+  background:var(--panel-2) !important;
+  color:var(--text) !important;
+  border:1px solid var(--line) !important;
+  border-radius:var(--r) !important;
+}
+
+/* Entry/title tiles in the list */
+#root [data-testid="collection-container"] .MuiListItem-root,
+#root [data-testid="collection-container"] .MuiListItemButton-root,
+#root [data-testid="collection-container"] .MuiCard-root{
+  background:var(--panel-2) !important;
+  color:var(--text) !important;
+  border:1px solid var(--line) !important;
+  border-radius:var(--r) !important;
+}
+#root [data-testid="collection-container"] .MuiListItem-root:hover{
+  background:rgba(255,255,255,.06) !important;
 }
