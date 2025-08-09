@@ -1,240 +1,45 @@
-/* Woodrum Admin Theme v2.4 — stable dark everywhere, no harsh whites */
+/*
+  Woodrum Admin Theme v3.0 - The Invert Method
+  This is a 'brute force' theme that inverts the default light UI to create a dark mode.
+  It is much more robust against CMS updates than the previous theme.
+*/
 
-:root{
-  --bg:#0b1225; --panel:#0e1730; --panel-2:#1c2744; --line:#22345b;
-  --text:#e7efff; --muted:#a5b8e6; --accent:#59a3ff; --accent-900:#2e7ad8;
-  --r:14px; --rs:10px; --ring:0 0 0 2px rgba(89,163,255,.35);
-  --shadow:0 8px 24px rgba(4,10,28,.35);
-}
-
-*{box-sizing:border-box}
-
-/* Shell */
-html,body,#root,#nc-root,.nc-app{
-  min-height:100vh;
-  background:
-    radial-gradient(60% 80% at 10% -10%, rgba(89,163,255,.08), transparent 40%),
-    radial-gradient(40% 60% at 110% 10%, rgba(89,163,255,.06), transparent 50%),
-    var(--bg);
-  color:var(--text);
-  font-family:'IBM Plex Mono',monospace;
-  color-scheme:dark;
+:root {
+  /* Define key colors that we can use for elements we DON'T invert. */
+  --bg: #0a1020;
+  --panel: #0d152b;
+  --line: #22345b;
+  --accent: #59a3ff;
+  --text: #e7efff;
 }
 
-/* Header / top bar */
-.MuiAppBar-root,
-.MuiAppBar-colorPrimary,
-.MuiAppBar-colorDefault,
-[class*="AppHeader"],
-[data-testid="header"],
-.MuiToolbar-root{
-  background:linear-gradient(180deg,var(--panel-2),var(--panel)) !important;
-  color:var(--text) !important;
-  border-bottom:1px solid var(--line) !important;
-  box-shadow:var(--shadow) !important;
-}
-[class*="AppHeader"] *{font-size:14px}
-
-/* Sidebar / collections */
-[class*="Sidebar"],[data-testid="sidebar"],[class*="CollectionContainer"]{
-  background:var(--panel) !important;
-  border-right:1px solid var(--line) !important;
-}
-[class*="SearchInput"] input{
-  background:#0b1631 !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--rs) !important;
+/* Set the body background color. This is OUTSIDE the inverted element. */
+body {
+  background-color: var(--bg) !important;
 }
 
-/* === Core content area cards, lists, and papers (make dark, always) === */
-#root .MuiPaper-root, #root .MuiPopover-paper, #root .MuiMenu-paper, #root .MuiDrawer-paper, #root .MuiCard-root{
-  background:var(--panel-2) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--r) !important;
-  box-shadow:var(--shadow) !important;
+/* Invert the entire CMS application root.
+  The hue-rotate keeps colors (like blue) from flipping to their opposite (yellow).
+*/
+#nc-root {
+  filter: invert(1) hue-rotate(180deg);
+  /* We also set the background here to ensure it's uniform under the filter. */
+  background-color: var(--bg) !important;
 }
 
-/* Entry list cards (detail view tiles) */
-[data-testid="entry-card"],[class*="EntryCard"]{
-  background:var(--panel) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--r) !important;
-}
-[data-testid="entry-card"]:hover{border-color:var(--accent) !important}
-
-/* Editor + preview panes */
-[data-testid="editor"],[class*="Editor"]{background:var(--bg) !important}
-[data-testid="editor-pane"],[class*="EditorPane"]{background:var(--bg) !important}
-[data-testid="preview-pane"],[class*="PreviewPane"]{
-  background:var(--panel) !important;
-  border-left:1px solid var(--line) !important;
-}
-[class*="Resizer"]{background:var(--line) !important; opacity:.35 !important}
-
-/* Inputs / selects / textareas */
-input,textarea,select,
-.MuiInputBase-root,.MuiInputBase-input,
-.MuiOutlinedInput-root,.MuiOutlinedInput-input,
-.MuiInput-root input,.MuiFormControl-root{
-  background:#0b1631 !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--rs) !important;
-}
-input::placeholder,textarea::placeholder{color:var(--muted) !important}
-input:focus,textarea:focus,select:focus,
-.Mui-focused .MuiOutlinedInput-notchedOutline{
-  border-color:var(--accent) !important;
-  box-shadow:var(--ring) !important;
-}
-.MuiOutlinedInput-notchedOutline{border-color:var(--line) !important}
-
-/* Draft.js / Rich text editor */
-.rdw-editor-main,
-.DraftEditor-root,
-.public-DraftEditor-content,
-[contenteditable="true"]{
-  background:#0b1631 !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--rs) !important;
-}
-.rdw-editor-toolbar{
-  background:var(--panel-2) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--rs) !important;
-}
-.rdw-option-wrapper{
-  background:transparent !important;
-  border:1px solid transparent !important;
-  color:var(--muted) !important;
-}
-.rdw-option-wrapper:hover{
-  background:rgba(255,255,255,.06) !important;
-  color:var(--text) !important;
+/*
+  Now, we "re-invert" elements that should NOT be inverted, like images,
+  the post preview pane, and video players. Applying the filter twice
+  returns them to their original state.
+*/
+#nc-root img,
+#nc-root video,
+#nc-GITOAUTH-progress-indicator,
+#nc-root [data-testid="preview-pane"] iframe {
+  filter: invert(1) hue-rotate(180deg);
 }
 
-/* CodeMirror (if used) */
-.CodeMirror{
-  background:#0b1631 !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--rs) !important;
-}
-.CodeMirror-gutters{background:#0b1631 !important; border-right:1px solid var(--line) !important}
-.CodeMirror-cursor{border-left:2px solid var(--accent) !important}
-.CodeMirror-selected{background:rgba(89,163,255,.25) !important}
-
-/* Buttons */
-button,[role="button"],.MuiButton-root{
-  border-radius:var(--rs) !important;
-  border:1px solid transparent !important;
-  font-weight:600 !important;
-}
-.MuiButton-containedPrimary,
-.MuiButton-root.MuiButton-contained{
-  background:linear-gradient(180deg,var(--accent),var(--accent-900)) !important;
-  color:#000 !important;
-}
-.MuiButton-outlined{
-  background:var(--panel) !important;
-  color:var(--text) !important;
-  border-color:var(--line) !important;
-}
-.MuiButton-outlined:hover{border-color:var(--accent) !important}
-
-/* Chips, switches */
-.MuiChip-root{
-  background:var(--panel-2) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:999px !important;
-}
-.MuiChip-icon,.MuiChip-deleteIcon{color:var(--muted) !important}
-.MuiSwitch-track{background-color:var(--line) !important}
-.MuiSwitch-thumb{background-color:var(--accent) !important}
-.Mui-checked + .MuiSwitch-track{background-color:rgba(89,163,255,.4) !important}
-
-/* Menus / popovers */
-.MuiMenuItem-root{color:var(--text) !important}
-.MuiMenuItem-root:hover{background:rgba(255,255,255,.06) !important}
-
-/* Date picker (MUI) */
-.MuiPickersPopper-root .MuiPaper-root,
-.MuiPickersLayout-root,
-.MuiPickersToolbar-root,
-.MuiPickersCalendarHeader-root,
-.MuiDayCalendar-monthContainer{
-  background:var(--panel-2) !important;
-  color:var(--text) !important;
-  border-color:var(--line) !important;
-}
-.MuiPickersDay-root{ color:var(--text) !important }
-.MuiPickersDay-root.Mui-selected{
-  background:var(--accent) !important; color:#000 !important;
-}
-
-/* Toasts / overlays */
-[role="alert"],[class*="Snackbar"]{
-  background:var(--panel-2) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--r) !important;
-}
-.MuiBackdrop-root{background-color:rgba(3,10,24,.7) !important}
-
-/* Media library */
-[data-testid="media-library"],[class*="MediaLibrary"]{background:var(--panel) !important}
-
-/* Links + scrollbars */
-a{color:var(--accent) !important; text-decoration:none}
-a:hover{text-decoration:underline}
-*::-webkit-scrollbar{width:10px;height:10px}
-*::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
-*::-webkit-scrollbar-track{background:transparent}
-
-/* Safety nets for inline whites */
-*[style*="background: rgb(255, 255, 255)"],
-*[style*="background-color: rgb(255, 255, 255)"],
-*[style*="#fff"], *[style*="#FFF"], *[style*="#ffffff"], *[style*="#FFFFFF"]{
-  background-color:#0b1631 !important; color:var(--text) !important;
-}
-
-/* === v2.4 specific: collections box, "Posts" header, and entry title tiles === */
-
-/* Collections panel + search wrapper */
-#root [data-testid="sidebar"] .MuiPaper-root,
-#root [data-testid="sidebar"] .MuiList-root,
-#root [data-testid="sidebar"] .MuiListItem-root,
-#root [data-testid="sidebar"] .MuiListItemButton-root,
-#root [data-testid="sidebar"] .MuiBox-root{
-  background:var(--panel-2) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--r) !important;
-}
-
-/* "Posts" list header/toolbar area */
-#root [data-testid="collection-container"] .MuiPaper-root,
-#root [data-testid="collection-container"] .MuiToolbar-root,
-#root [data-testid="collection-container"] .MuiBox-root{
-  background:var(--panel-2) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--r) !important;
-}
-
-/* Entry/title tiles in the list */
-#root [data-testid="collection-container"] .MuiListItem-root,
-#root [data-testid="collection-container"] .MuiListItemButton-root,
-#root [data-testid="collection-container"] .MuiCard-root{
-  background:var(--panel-2) !important;
-  color:var(--text) !important;
-  border:1px solid var(--line) !important;
-  border-radius:var(--r) !important;
-}
-#root [data-testid="collection-container"] .MuiListItem-root:hover{
-  background:rgba(255,255,255,.06) !important;
-}
+/* Custom scrollbar styles */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
+*::-webkit-scrollbar-track { background: transparent; }
