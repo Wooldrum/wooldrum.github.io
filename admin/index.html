@@ -15,32 +15,9 @@
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
-<script>
+  <script>
     // Ensure preview uses our site typography/colors
     CMS.registerPreviewStyle('/admin/preview.css?v=2');
-
-    // Runtime hotfix so MUI can't flip backgrounds to white after load
-    const s = document.createElement('style');
-    s.id = 'woodrum-hotfix';
-    s.textContent = `
-      html,body,#root,#nc-root,.nc-app { background:#0b1225 !important; color:#e7efff !important; }
-      #root>div,#root>div>div { background:#0b1225 !important; }
-      .MuiContainer-root,.MuiBox-root,.MuiGrid-root,.MuiStack-root { background:transparent !important; }
-
-      /* General rule for cards and papers using the new lighter color */
-      .MuiPaper-root, .MuiPopover-paper, .MuiDrawer-paper, .MuiMenu-paper, .MuiCard-root {
-        background-color: #1c2744 !important;
-        border: 1px solid #22345b !important;
-        color: #e7efff !important;
-      }
-
-      /* FINAL FIX: Directly target the List Item components to kill the white background */
-      [data-testid="collection-container"] .MuiListItem-root,
-      [data-testid="collection-container"] .MuiListItemButton-root {
-        background-color: #1c2744 !important;
-      }
-    `;
-    document.head.appendChild(s);
   </script>
 </body>
 </html>
