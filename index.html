@@ -7,160 +7,178 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Woodrum's Page</title>
 
-  <!-- Tailwind -->
+  <!-- Tailwind + Font -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind config -->
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          spacing: { '44': '11rem' },  /* avatar tile height baseline */
+          spacing: { '44': '11rem' }, /* 176px */
           colors: {
-            'dark-bg':     '#0a1020',
-            'dark-panel':  '#0d152b',
-            'dark-line':   '#22345b',
-            'dark-text':   '#e7efff',
-            'dark-muted':  '#9fb2de',
+            'dark-bg': '#0a1020',
+            'dark-panel': '#0d152b',
+            'dark-line': '#22345b',
+            'dark-text': '#e7efff',
+            'dark-muted': '#9fb2de',
             'dark-accent': '#59a3ff',
-          },
-          borderRadius: { 'tile': '0.75rem' }
+          }
         }
       }
     }
   </script>
 
-  <!-- Markdown + sanitize (for About) -->
-  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
-
   <style>
-    :root { --pfp-h: 176px; } /* synced at runtime to match the avatar tile */
+    :root{ --pfpH:176px; }        /* shared height so the header rule lines up with sidebar rule */
 
-    body { font-family: 'IBM Plex Mono', monospace; }
     html, body { overflow: visible; }
+    body { font-family: 'IBM Plex Mono', monospace; }
+
+    /* Blog-only view hides About */
     body.blog-mode #about { display: none; }
 
     /* Sidebar tiles */
     .tile-btn{
       position: relative;
-      height: 4rem;
-      border-radius: .75rem;
-      overflow: hidden;            /* clip image edges perfectly */
+      height: 64px; /* h-16 */
+      overflow: hidden;
+      border-radius: 12px;
+      background: #0d152b;
       display: block;
     }
     .tile-img{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;           /* always fills */
-      display: block;
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;         /* nice crop for normal assets */
+      display:block;
     }
-    .tile-label{
-      height: 4rem;
-      display:flex; align-items:center; justify-content:center;
-    }
+    /* Force Windows to fill (squish) to the box exactly */
+    .tile-windows .tile-img{ object-fit:fill; }
 
-    /* Avatar tile (strict 1:1 square) */
-    .pfp-wrap { width: 100%; height: 11rem; padding: .75rem; }
-    .pfp-img  { width: 100%; height: 100%; object-fit: cover; border-radius: .75rem; display:block; }
-
-    /* Header height is locked to avatar tile so bottom borders line up exactly */
-    #pageHeader { height: var(--pfp-h); }
-
-    /* Little utility for dropdown items */
+    /* Dropdown items */
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
     .menu-item:hover { background:#0a1020; }
 
-    /* Post page typography kept here so style stays consistent site-wide */
-    .post-body { max-width: 70ch; }
-    .post-body p { color: #9fb2de; margin: .9rem 0; }
-    .post-body h1, .post-body h2, .post-body h3 { color: #ffffff; margin: 1.25rem 0 .5rem; }
-    .post-body a { color: #59a3ff; text-decoration: underline; }
-    .post-body img { max-width: 100%; border: 1px solid #22345b; border-radius: 12px; margin: 1rem 0; }
-    .post-body blockquote {
-      margin: 1rem 0; padding: .75rem 1rem;
-      border-left: 3px solid #59a3ff; background: #0d152b; color: #9fb2de; border-radius: 10px;
+    /* Align header + sidebar horizontal rule perfectly by sharing height */
+    .pfpH { height: var(--pfpH); }
+
+    /* Mobile: hide sidebar; show compact icon row */
+    @media (max-width: 767px){
+      #leftRail { display:none; }
+      #mobileCool { display:flex; }
     }
-    .post-body code { background: #0d152b; border: 1px solid #22345b; padding: .15rem .35rem; border-radius: 8px; }
-    .post-body pre { background: #0d152b; border: 1px solid #22345b; color: #e7efff; padding: 1rem; border-radius: 12px; overflow: auto; }
   </style>
+
+  <!-- libs for About rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
   <script defer src="/assets/main.js"></script>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
 
   <div class="flex flex-col md:flex-row min-h-screen">
-    <!-- LEFT RAIL -->
-    <aside class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
+
+    <!-- LEFT RAIL (desktop only) -->
+    <aside id="leftRail" class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
-        <!-- PFP (square; click opens menu) -->
-        <div id="pfpBox" class="pfp-wrap border-b-2 border-dark-line flex-shrink-0">
-          <button id="pfpToggle"
-                  class="block w-full h-full rounded-tile outline-none focus:ring-2 focus:ring-dark-accent cursor-pointer">
-            <img src="/assets/images/channels4_profile.jpg"
-                 alt="Profile picture"
-                 class="pfp-img border-2 border-dark-line hover:border-dark-accent transition-colors">
+
+        <!-- PFP (click = dropdown) -->
+        <div class="pfpH border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
+          <button id="pfpToggle" class="rounded-xl outline-none focus:ring-2 focus:ring-dark-accent">
+            <img
+              src="/assets/images/channels4_profile.jpg"
+              alt="Profile picture"
+              class="w-36 h-36 rounded-xl object-cover border-2 border-dark-line hover:border-dark-accent transition-colors"
+            >
           </button>
         </div>
 
-        <!-- Dropdown (absolute to sidebar container; very high z-index) -->
+        <!-- Dropdown menu -->
         <div id="pfpMenu"
-             class="hidden absolute left-2 z-[200] w-44 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg"
-             style="top: calc(var(--pfp-h) - .75rem);">
-          <a href="https://youtube.com/@Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
+             class="hidden absolute left-2 top-[170px] z-50 w-40 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
+          <a href="https://youtube.com/wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
           <a href="https://discord.gg/WmZ5DVt5N2" target="_blank" rel="noopener" class="menu-item text-dark-muted">Discord</a>
           <a href="https://github.com/Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">GitHub</a>
           <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
-        <!-- Tiles (Cool stuff is a non-clickable label; the rest are image buttons) -->
+        <!-- Sidebar labels + tiles -->
         <nav class="flex flex-row md:flex-col w-full">
-          <div class="tile-label w-full border-b-2 border-dark-line">
-            <span class="text-lg font-semibold">Cool stuff</span>
+          <!-- Label only (not a link) -->
+          <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
+            <span class="text-lg font-semibold text-dark-text">Cool stuff</span>
           </div>
 
-          <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
+          <!-- Zen tile -->
+          <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
              class="tile-btn w-full border-b-2 border-dark-line">
             <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="tile-img">
           </a>
 
-          <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
-             class="tile-btn w-full border-b-2 border-dark-line">
+          <!-- Windows tile (squish to fill) -->
+          <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" title="Windows 11"
+             class="tile-btn tile-windows w-full border-b-2 border-dark-line">
             <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="tile-img">
           </a>
 
-          <a href="#" class="tile-label w-full border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <span class="text-xl">Button 4</span>
+          <!-- Placeholder
+          <a href="#" class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
+            <span class="text-xl text-dark-muted">Button 4</span>
           </a>
+          -->
+          <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
+            <span class="text-xl text-dark-muted">Button 4</span>
+          </div>
         </nav>
       </div>
     </aside>
 
     <!-- MAIN -->
     <main class="flex-1">
-      <!-- Header: height is synced to avatar tile -->
-      <header id="pageHeader" class="px-6 md:px-10 border-b-2 border-dark-line flex flex-col justify-center">
-        <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
-        <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
+      <!-- Header (shares height with PFP tile so the border lines up perfectly) -->
+      <header class="pfpH px-6 md:px-10 border-b-2 border-dark-line flex items-center">
+        <div class="flex items-center gap-4 md:hidden">
+          <!-- small pfp for mobile -->
+          <img src="/assets/images/channels4_profile.jpg" alt="Profile picture" class="h-10 w-10 rounded-lg border border-dark-line">
+          <div>
+            <h1 class="text-2xl font-bold text-white">Woodrum's Page</h1>
+            <p class="text-sm text-dark-muted -mt-1">Welcome to my personal corner of the internet.</p>
+          </div>
+        </div>
+        <div class="hidden md:block">
+          <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
+          <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
+        </div>
       </header>
 
-      <!-- About (from assets/content/about.md) -->
+      <!-- Mobile compact icons (replaces sidebar on small screens) -->
+      <div id="mobileCool" class="hidden p-3 gap-3 border-b-2 border-dark-line">
+        <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
+           class="relative w-24 h-12 rounded-xl overflow-hidden border border-dark-line">
+          <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="absolute inset-0 w-full h-full object-cover">
+        </a>
+        <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
+           class="relative w-24 h-12 rounded-xl overflow-hidden border border-dark-line">
+          <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="absolute inset-0 w-full h-full object-fill">
+        </a>
+      </div>
+
+      <!-- About -->
       <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
         <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
-        <div id="aboutContent"
-             data-src="{{ '/assets/content/about.md' | relative_url }}"
-             class="text-dark-muted leading-relaxed max-w-prose">
-          <p class="opacity-60">Loading…</p>
-        </div>
+        <div id="aboutBody" class="text-dark-muted leading-relaxed max-w-prose">Loading...</div>
       </section>
 
       <!-- Blog -->
       <section id="blog" class="p-6 md:p-10">
-        <div class="flex items-center justify-between">
-          <h2 class="text-3xl font-bold text-white">My Blog</h2>
-        </div>
+        <h2 class="text-3xl font-bold text-white mb-2">My Blog</h2>
 
-        <div class="mt-8 space-y-8">
+        <div class="mt-6 space-y-8">
           {% if site.posts == empty %}
             <article class="border-t border-dark-line pt-6">
               <h3 class="text-2xl font-semibold text-dark-accent">Hello!</h3>
@@ -189,6 +207,5 @@
       </section>
     </main>
   </div>
-
 </body>
 </html>
