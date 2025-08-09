@@ -1,3 +1,5 @@
+// admin/admin.js  — custom dark admin, no Decap
+
 // --------- CONFIG ----------
 const OWNER = "Wooldrum";
 const REPO = "wooldrum.github.io";
@@ -7,8 +9,13 @@ const IMAGES_DIR = "assets/images";
 
 // Your deployed Vercel OAuth host
 const OAUTH_HOST = "https://wooldrum-decap-oauth.vercel.app";
-// We'll ask the backend to send the token back here:
+// Send token back to this page:
 const RETURN_TO = "https://wooldrum.github.io/admin/index.html";
+
+// --------- DYNAMIC LIBS (Markdown preview) ----------
+const { marked } = await import("https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js");
+const DOMPurifyMod = await import("https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js");
+const DOMPurify = DOMPurifyMod.default || window.DOMPurify;
 
 // --------- STATE ----------
 let token = null;
@@ -28,15 +35,22 @@ const previewEl = el("preview");
 const loginBtn = el("loginBtn");
 const logoutBtn = el("logoutBtn");
 const newPostBtn = el("newPostBtn");
-const saveBtn = el("saveBtn");
 const deleteBtn = el("deleteBtn");
-const resetBtn = el("resetBtn");
 
 // --------- UTIL ----------
 const b64 = (str) => btoa(unescape(encodeURIComponent(str)));
 const unb64 = (str) => decodeURIComponent(escape(atob(str)));
-const fmtDate = (d) =>
-  new Date(d).toISOString().slice(0, 16); // yyyy-mm-ddThh:mm (local for input)
+const pad2 = (n) => String(n).padStart(2, "0");
+const fmtDate = (d) => {
+  const x = new Date(d);
+  // datetime-local needs local time without seconds
+  const yyyy = x.getFullYear();
+  const mm = pad2(x.getMonth() + 1);
+  const dd = pad2(x.getDate());
+  const hh = pad2(x.getHours());
+  const mi = pad2(x.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+};
 const toFrontmatter = (data) => {
   const lines = [
     "---",
@@ -50,7 +64,6 @@ const toFrontmatter = (data) => {
   return lines.join("\n");
 };
 const parseFrontmatter = (raw) => {
-  // very small parser: expects --- on top/bottom
   const m = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!m) return { fm: {}, body: raw };
   const fm = {};
@@ -125,7 +138,6 @@ function readTokenFromHash() {
   setAuthedUI(!!token);
 }
 loginBtn.addEventListener("click", () => {
-  // Send user to our auth endpoint, asking it to come back to RETURN_TO with #token
   const url = new URL(`${OAUTH_HOST}/api/auth`);
   url.searchParams.set("provider", "github");
   url.searchParams.set("site_id", "wooldrum.github.io");
@@ -145,12 +157,10 @@ readTokenFromHash();
 // --------- POSTS LIST ----------
 async function listPosts() {
   const items = await getContent(POSTS_DIR);
-  // Only .md files, newest first by filename date
   const files = items
     .filter((i) => i.type === "file" && /\.md$/i.test(i.name))
     .sort((a, b) => (a.name < b.name ? 1 : -1));
 
-  // Build list with titles by reading frontmatter quickly
   postList.innerHTML = "";
   for (const f of files) {
     const file = await getContent(`${POSTS_DIR}/${f.name}`);
@@ -159,7 +169,7 @@ async function listPosts() {
     const li = document.createElement("li");
     li.className = "py-3";
     li.innerHTML = `
-      <button class="w-full text-left px-3 py-3 ghost rounded-xl border border-dark-line hover:border-dark-accent">
+      <button class="w-full text-left px-3 py-3 bg-[#0b1430] rounded-xl border border-dark-line hover:border-dark-accent">
         <div class="text-white font-semibold">${fm.title || f.name}</div>
         <div class="text-xs text-dark-muted">${fm.date ? new Date(fm.date).toLocaleString() : ""} • ${f.name}</div>
       </button>`;
@@ -168,7 +178,10 @@ async function listPosts() {
   }
 }
 
-// --------- LOAD / EDIT ----------
+// --------- EDITOR / DATE NOW ----------
+function setDateNow() {
+  dateEl.value = fmtDate(new Date());
+}
 function fillEditor(path, sha, raw) {
   const { fm, body } = parseFrontmatter(raw);
   editPathEl.value = path;
@@ -192,36 +205,116 @@ function resetEditor() {
   current = null;
   editPathEl.value = "";
   titleEl.value = "";
-  dateEl.value = fmtDate(new Date());
+  setDateNow();
   imgFileEl.value = "";
   imgUrlEl.value = "";
   bodyEl.value = "";
   deleteBtn.classList.add("hidden");
   updatePreview();
 }
-newPostBtn.addEventListener("click", resetEditor);
-resetBtn.addEventListener("click", resetEditor);
+document.getElementById("resetBtn").addEventListener("click", resetEditor);
+document.getElementById("newPostBtn").addEventListener("click", resetEditor);
+setDateNow(); // auto-fill immediately on first load
+
+// --------- EDITOR TOOLBAR (Bold, Italic, Link, Highlight, Size) ----------
+(function buildToolbar(){
+  const toolbar = document.createElement("div");
+  toolbar.className = "flex flex-wrap items-center gap-2 mb-2";
+
+  const btnClass = "px-2 py-1 rounded-xl border border-dark-line bg-dark-panel text-dark-muted hover:border-dark-accent";
+  const mkBtn = (label, title, onClick) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = btnClass;
+    b.title = title;
+    b.textContent = label;
+    b.addEventListener("click", onClick);
+    return b;
+  };
+
+  // Helpers for selection manipulation
+  const wrapSel = (before, after = before) => {
+    bodyEl.focus();
+    const s = bodyEl.selectionStart ?? 0;
+    const e = bodyEl.selectionEnd ?? 0;
+    const val = bodyEl.value;
+    const sel = val.slice(s, e) || "text";
+    const out = val.slice(0, s) + before + sel + after + val.slice(e);
+    bodyEl.value = out;
+    const pos = s + before.length + sel.length + after.length;
+    bodyEl.setSelectionRange(pos, pos);
+    updatePreview();
+  };
+  const insertLink = () => {
+    bodyEl.focus();
+    const s = bodyEl.selectionStart ?? 0;
+    const e = bodyEl.selectionEnd ?? 0;
+    const val = bodyEl.value;
+    const sel = val.slice(s, e) || "link text";
+    const url = prompt("URL for the link:", "https://");
+    if (!url) return;
+    const md = `[${sel}](${url})`;
+    const out = val.slice(0, s) + md + val.slice(e);
+    bodyEl.value = out;
+    const pos = s + md.length;
+    bodyEl.setSelectionRange(pos, pos);
+    updatePreview();
+  };
+  const applySize = (em) => {
+    // Wrap with inline HTML span so kramdown renders it
+    wrapSel(`<span style="font-size:${em}">`, `</span>`);
+  };
+
+  toolbar.appendChild(mkBtn("B", "Bold", () => wrapSel("**", "**")));
+  toolbar.appendChild(mkBtn("I", "Italic", () => wrapSel("*", "*")));
+  toolbar.appendChild(mkBtn("🔗", "Link", insertLink));
+  toolbar.appendChild(mkBtn("HL", "Highlight", () => wrapSel("<mark>", "</mark>")));
+
+  // Size dropdown
+  const sel = document.createElement("select");
+  sel.className = "px-2 py-1 rounded-xl border border-dark-line bg-dark-panel text-dark-muted hover:border-dark-accent";
+  ["Size", "Small", "Normal", "Large", "X-Large"].forEach((opt, i) => {
+    const o = document.createElement("option");
+    o.value = i ? opt.toLowerCase() : "";
+    o.textContent = opt;
+    sel.appendChild(o);
+  });
+  sel.addEventListener("change", () => {
+    if (!sel.value) return;
+    const map = {
+      small: "0.9em",
+      normal: "1.0em",
+      large: "1.25em",
+      "x-large": "1.5em",
+    };
+    applySize(map[sel.value]);
+    sel.value = "";
+  });
+  toolbar.appendChild(sel);
+
+  // Insert toolbar just above the textarea
+  bodyEl.parentElement.insertBefore(toolbar, bodyEl);
+})();
 
 // --------- PREVIEW ----------
 function updatePreview() {
-  const data = {
-    title: titleEl.value.trim(),
-    date: dateEl.value ? new Date(dateEl.value).toISOString() : new Date().toISOString(),
-    image: (imgUrlEl.value || "").trim(),
-    body: bodyEl.value,
-  };
-  let html = `<h1 class="text-2xl font-bold text-white">${data.title || "Untitled"}</h1>`;
-  html += `<p class="text-sm text-dark-muted">${new Date(data.date).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'})}</p>`;
-  if (data.image) {
-    html += `<img src="${data.image}" class="mt-4 rounded-xl border border-dark-line max-w-full"/>`;
-  }
-  html += `<div class="mt-3 whitespace-pre-wrap text-dark-muted">${data.body || ""}</div>`;
+  const title = (titleEl.value || "Untitled").trim();
+  const dateIso = dateEl.value ? new Date(dateEl.value).toISOString() : new Date().toISOString();
+  const img = (imgUrlEl.value || "").trim();
+  let html = `<h1 class="text-2xl font-bold text-white">${title}</h1>`;
+  html += `<p class="text-sm text-dark-muted">${new Date(dateIso).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'})}</p>`;
+  if (img) html += `<img src="${img}" class="mt-4 rounded-xl border border-dark-line max-w-full"/>`;
+  const md = bodyEl.value || "";
+  html += `<div class="mt-3 prose prose-invert max-w-none">${DOMPurify.sanitize(marked.parse(md))}</div>`;
   previewEl.innerHTML = html;
 }
-titleEl.addEventListener("input", updatePreview);
-dateEl.addEventListener("input", updatePreview);
-imgUrlEl.addEventListener("input", updatePreview);
-bodyEl.addEventListener("input", updatePreview);
+["input","change"].forEach(evt=>{
+  titleEl.addEventListener(evt, updatePreview);
+  dateEl.addEventListener(evt, updatePreview);
+  imgUrlEl.addEventListener(evt, updatePreview);
+  bodyEl.addEventListener(evt, updatePreview);
+});
+updatePreview();
 
 // --------- IMAGE UPLOAD ----------
 async function maybeUploadImage() {
@@ -262,14 +355,13 @@ async function savePost(e) {
   if (!path) {
     const slug = slugify(title);
     const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = pad2(date.getMonth() + 1);
+    const dd = pad2(date.getDate());
     path = `${POSTS_DIR}/${yyyy}-${mm}-${dd}-${slug}.md`;
   }
 
   const message = current ? `update post: ${title}` : `create post: ${title}`;
   const res = await putContent(path, contentB64, message, sha);
-  // Reload list & load this file
   await listPosts();
   await loadPost(path, res.content.sha, content);
   alert("Saved!");
