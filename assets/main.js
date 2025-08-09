@@ -1,71 +1,68 @@
 (function () {
   const body = document.body;
 
-  // --- Modes by hash (kept)
+  // --- Mode by #hash (kept)
   function setModeFromHash() {
-    if (location.hash === '#blog') {
-      body.classList.add('blog-mode');
-    } else {
-      body.classList.remove('blog-mode');
-    }
+    if (location.hash === '#blog') body.classList.add('blog-mode');
+    else body.classList.remove('blog-mode');
   }
   window.addEventListener('hashchange', setModeFromHash);
   setModeFromHash();
 
-  // --- PFP dropdown
+  // --- PFP dropdown (robust)
   const pfpToggle = document.getElementById('pfpToggle');
   const pfpMenu   = document.getElementById('pfpMenu');
   if (pfpToggle && pfpMenu) {
-    pfpToggle.addEventListener('click', (e) => {
-      e.preventDefault();
+    const toggleMenu = (e) => {
+      e?.preventDefault?.();
       pfpMenu.classList.toggle('hidden');
-    });
+    };
+    pfpToggle.addEventListener('click', toggleMenu);
+    pfpToggle.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') toggleMenu(e); });
+
     document.addEventListener('click', (e) => {
-      if (!pfpMenu.classList.contains('hidden')) {
-        const inside = pfpMenu.contains(e.target) || pfpToggle.contains(e.target);
-        if (!inside) pfpMenu.classList.add('hidden');
-      }
+      if (pfpMenu.classList.contains('hidden')) return;
+      const inside = pfpMenu.contains(e.target) || pfpToggle.contains(e.target);
+      if (!inside) pfpMenu.classList.add('hidden');
     });
   }
 
   // --- EXACT header alignment with avatar tile (including borders)
   function syncHeaderHeight() {
     const header = document.getElementById('pageHeader');
-    const pfpBox = document.querySelector('.pfp-wrap');
+    const pfpBox = document.getElementById('pfpBox');
     if (!header || !pfpBox) return;
-
-    // Use bounding rect for “painted” size (padding + border).
+    // Use painted size (padding + borders)
     const h = Math.round(pfpBox.getBoundingClientRect().height);
     document.documentElement.style.setProperty('--pfp-h', `${h}px`);
+    header.style.height = `${h}px`;
   }
   window.addEventListener('load', syncHeaderHeight);
   window.addEventListener('resize', syncHeaderHeight);
 
-  // --- About content (relative path = GH Pages safe)
+  // --- About content (path provided by data-attr so Jekyll resolves correctly)
   async function loadAbout() {
     const out = document.getElementById('aboutContent');
     if (!out) return;
+    const src = out.getAttribute('data-src') || 'assets/content/about.md';
     try {
-      const res = await fetch('assets/content/about.md', { cache: 'no-store' });
+      const res = await fetch(src, { cache: 'no-store' });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       const md = await res.text();
       out.innerHTML = DOMPurify.sanitize(marked.parse(md));
     } catch (err) {
-      out.innerHTML = `<p class="text-red-300">Failed to load About content.</p>`;
       console.error('about.md load failed:', err);
+      out.innerHTML = `<p class="text-red-300">Failed to load About content.</p>`;
     }
   }
-  loadAbout();
+  window.addEventListener('load', loadAbout);
 
-  // --- Mobile: hide the "Cool stuff" label tile
+  // --- Mobile: hide the "Cool stuff" label tile (icons remain)
   function mobileCoolStuff() {
-    const labelTile = document.querySelector('nav .tile:first-child');
-    if (!labelTile) return;
-    if (window.matchMedia('(max-width: 767px)').matches) {
-      labelTile.classList.add('hidden');
-    } else {
-      labelTile.classList.remove('hidden');
-    }
+    const label = document.querySelector('.tile-label');
+    if (!label) return;
+    if (window.matchMedia('(max-width: 767px)').matches) label.classList.add('hidden');
+    else label.classList.remove('hidden');
   }
   window.addEventListener('load', mobileCoolStuff);
   window.addEventListener('resize', mobileCoolStuff);
