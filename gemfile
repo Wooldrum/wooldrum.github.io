@@ -1,0 +1,3 @@
+source "https://rubygems.org"
+# This tells the builder exactly which version of Jekyll to use.
+gem "jekyll", "~> 3.9.3"
