@@ -4,20 +4,59 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Editor — Woodrum</title>
+  <meta name="color-scheme" content="dark">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Brand variables (match site) -->
+  <style>
+    :root{
+      --bg:#0a1020;
+      --panel:#0d152b;
+      --line:#22345b;
+      --text:#e7efff;
+      --muted:#9fb2de;
+      --accent:#59a3ff;
+      --danger:#ff6961;
+      --success:#59ffa3;
+      --radius:12px;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                   Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+                   "Segoe UI Emoji";
+    }
+    /* Preload styles so there’s no flash */
+    #app{min-height:100vh;background:var(--bg)}
+  </style>
 
-  <link rel="stylesheet" href="/admin/admin.css?v=5">
-  <link rel="stylesheet" href="/admin/preview.css?v=2">
+  <!-- Our overrides for Decap UI -->
+  <link rel="stylesheet" href="./admin.css">
+  <!-- Post preview styles (uses site palette & type scale) -->
+  <link rel="stylesheet" href="./preview.css">
 </head>
 <body>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <div id="app"></div>
+
+  <!-- Decap CMS -->
+  <script src="https://unpkg.com/decap-cms-app@^3.0.0/dist/decap-cms.js"></script>
 
   <script>
-    // Ensure preview uses our site typography/colors
-    CMS.registerPreviewStyle('/admin/preview.css?v=2');
+    // Load preview CSS into iframe as well
+    window.CMS?.registerPreviewStyle('./preview.css');
+
+    // Optional: simple “published” badge color tweak
+    CMS.registerEventListener({
+      name: 'preSave',
+      handler: ({entry}) => entry
+    });
+  </script>
+
+  <!-- Use external config.yml (below) -->
+  <script>
+    // Nothing else needed—Decap auto-loads /admin/config.yml
   </script>
 </body>
 </html>
