@@ -44,7 +44,7 @@
     .image-tile{aspect-ratio:1/1;object-fit:cover;border-radius:.75rem;border:1px solid #22345b}
   </style>
 
-  <!-- Markdown + sanitize for preview -->
+  <!-- Markdown + sanitize (global) -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 </head>
@@ -56,7 +56,7 @@
       <div class="flex items-center gap-4">
         <h1 class="text-xl font-bold">Woodrum Admin</h1>
         <nav class="hidden md:flex items-center gap-4">
-          <button class="tab-btn text-dark-muted hover:text-dark-text" data-tab="posts">Posts</button>
+          <button class="tab-btn text-dark-muted hover:text-dark-text active" data-tab="posts">Posts</button>
           <button class="tab-btn text-dark-muted hover:text-dark-text" data-tab="assets">Assets</button>
         </nav>
       </div>
@@ -77,20 +77,15 @@
 
     <!-- POSTS TAB -->
     <section id="tab-posts" class="grid md:grid-cols-2 gap-6">
-      <!-- Left: list + editor -->
       <div class="space-y-6">
-        <!-- Posts list -->
         <div class="card p-4">
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-lg font-semibold">Posts</h2>
             <button id="newPostBtn" class="btn-accent hidden">New Post</button>
           </div>
-          <ul id="postsList" class="space-y-2 text-dark-muted">
-            <li class="text-sm">Loading…</li>
-          </ul>
+          <ul id="postsList" class="space-y-2 text-dark-muted"><li class="text-sm">Loading…</li></ul>
         </div>
 
-        <!-- Editor -->
         <div class="card p-4">
           <h2 class="text-lg font-semibold mb-4">Editor</h2>
 
@@ -105,11 +100,10 @@
             <div>
               <label class="block text-sm text-dark-muted mb-1">Image (uploads to assets/images/)</label>
               <input id="imgFile" type="file" accept="image/*" class="block w-full text-sm text-dark-muted" />
-              <input id="imgPath" type="text" class="input w-full px-3 py-2 mt-2" placeholder="or paste existing /assets/images/..." />
+              <input id="imgPath" type="text" class="input w-full px-3 py-2 mt-2" placeholder="or paste /assets/images/… or URL" />
             </div>
           </div>
 
-          <!-- Toolbar -->
           <div class="toolbar flex flex-wrap gap-2 mt-4">
             <button data-cmd="bold">B</button>
             <button data-cmd="italic"><em>I</em></button>
@@ -134,7 +128,6 @@
         </div>
       </div>
 
-      <!-- Right: preview -->
       <aside class="card p-4 h-fit">
         <h2 class="text-lg font-semibold">Preview</h2>
         <div id="preview" class="preview prose prose-invert max-w-none mt-3 text-dark-muted"></div>
@@ -143,13 +136,11 @@
 
     <!-- ASSETS TAB -->
     <section id="tab-assets" class="hidden space-y-6">
-      <!-- Upload -->
       <div class="card p-4">
         <h2 class="text-lg font-semibold mb-3">Upload image</h2>
         <input id="assetUpload" type="file" accept="image/*" class="block text-sm text-dark-muted" />
         <p class="text-xs text-dark-muted mt-2">Uploaded files land in <code>/assets/images/</code>.</p>
       </div>
-      <!-- Grid -->
       <div class="card p-4">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold">Images</h2>
@@ -162,6 +153,6 @@
     </section>
   </main>
 
-  <script type="module" src="./admin.js"></script>
+  <script defer src="./admin.js"></script>
 </body>
 </html>
