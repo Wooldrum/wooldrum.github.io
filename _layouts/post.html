@@ -1,1 +1,28 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ page.title }} — Woodrum's Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'IBM Plex Mono', monospace; }
+    html, body { overflow: visible; }
+    .prose :where(a){text-decoration:underline}
+  </style>
+</head>
+<body class="bg-dark-bg text-dark-text antialiased">
+  <main class="max-w-3xl mx-auto p-6 md:p-10">
+    <a href="{{ '/' | relative_url }}#blog" class="text-dark-accent underline">&larr; Back</a>
+    <h1 class="text-4xl font-bold mt-4">{{ page.title }}</h1>
+    <p class="text-dark-muted mt-2">{{ page.date | date: "%B %-d, %Y" }}</p>
+    {% if page.image %}
+      <img src="{{ page.image | relative_url }}" alt="" class="mt-6 rounded border" />
+    {% endif %}
+    <article class="prose prose-invert mt-6 max-w-none">
+      {{ content }}
+    </article>
+  </main>
+</body>
+</html>
 
