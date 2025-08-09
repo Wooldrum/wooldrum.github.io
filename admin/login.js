@@ -1,56 +1,42 @@
-<!doctype html>
-<html lang="en" class="dark">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Login — Woodrum Admin</title>
+// OAuth middleman
+const OAUTH_HOST = "https://wooldrum-decap-oauth.vercel.app";
+const SITE_ID = "wooldrum.github.io";
+const next = new URLSearchParams(location.search).get("next") || "/admin/index.html";
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'dark-bg': '#0a1020',
-            'dark-panel': '#0d152b',
-            'dark-line': '#22345b',
-            'dark-text': '#e7efff',
-            'dark-muted': '#9fb2de',
-            'dark-accent': '#59a3ff',
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body { font-family: 'IBM Plex Mono', monospace; }
-    .btn{padding:.5rem 1rem;border-radius:.75rem;border:1px solid #22345b;color:#9fb2de}
-    .btn:hover{color:#e7efff;border-color:#59a3ff}
-    .btn-accent{padding:.5rem 1rem;border-radius:.75rem;background:#59a3ff;color:#000;font-weight:600}
-    .btn-accent:hover{opacity:.9}
-  </style>
-</head>
-<body class="bg-dark-bg text-dark-text min-h-screen grid place-items-center">
+const loginBtn = document.getElementById("loginBtn");
+const continueBtn = document.getElementById("continueBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const alreadyBox = document.getElementById("already");
 
-  <main class="w-full max-w-md bg-dark-panel border border-dark-line rounded-2xl p-6">
-    <h1 class="text-2xl font-bold">Sign in</h1>
-    <p class="text-dark-muted mt-1">Authenticate with GitHub to edit posts and media.</p>
+function storeAndGo(t) {
+  sessionStorage.setItem("gh_token", t);
+  location.replace(next);
+}
 
-    <div id="already" class="hidden mt-4 p-3 rounded-xl border border-dark-line bg-[#0b1430]">
-      You’re already signed in. Continue to the admin panel.
-    </div>
+if (location.hash.startsWith("#token=")) {
+  storeAndGo(location.hash.slice(7));
+}
 
-    <div class="mt-6 flex flex-col gap-3">
-      <button id="loginBtn" class="btn-accent">Log in with GitHub</button>
-      <button id="continueBtn" class="btn hidden">Go to Admin</button>
-      <a href="/" class="btn text-center">Back to site</a>
-      <button id="logoutBtn" class="btn hidden">Log out</button>
-    </div>
-  </main>
+const existing = sessionStorage.getItem("gh_token");
+if (existing) {
+  alreadyBox.classList.remove("hidden");
+  continueBtn.classList.remove("hidden");
+  logoutBtn.classList.remove("hidden");
+}
 
-  <script defer src="./login.js"></script>
-</body>
-</html>
+loginBtn.addEventListener("click", () => {
+  const ret = `${location.origin}/admin/login.html?next=${encodeURIComponent(next)}`;
+  const url = new URL(`${OAUTH_HOST}/api/auth`);
+  url.searchParams.set("provider", "github");
+  url.searchParams.set("site_id", SITE_ID);
+  url.searchParams.set("scope", "repo,user");
+  url.searchParams.set("returnTo", ret);
+  location.href = url.toString();
+});
+
+continueBtn.addEventListener("click", () => location.replace(next));
+
+logoutBtn.addEventListener("click", () => {
+  sessionStorage.removeItem("gh_token");
+  location.reload();
+});
