@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ page.title }} — Woodrum's Page</title>
 
-  <!-- Tailwind (CDN) -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          spacing: { '44': '11rem' },
+          spacing: { '44': '11rem' }, /* 176px */
           colors: {
             'dark-bg': '#0a1020',
             'dark-panel': '#0d152b',
@@ -26,91 +26,168 @@
   </script>
 
   <style>
-    body { font-family: 'IBM Plex Mono', monospace; }
-    html, body { overflow: visible; }
+    :root{ --pfpH:176px; } /* keep header/rail borders aligned */
 
-    /* Minimal, explicit typography – NO dependency on Tailwind Typography */
+    html, body { overflow: visible; }
+    body { font-family: 'IBM Plex Mono', monospace; }
+
+    /* Sidebar tiles: square corners */
+    .tile-btn{
+      position: relative;
+      height: 64px;
+      overflow: hidden;
+      border-radius: 0;
+      background: #0d152b;
+      display: block;
+    }
+    .tile-img{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover; object-position:center;
+      display:block;
+    }
+    .tile-windows .tile-img{ object-fit:fill; } /* squish Windows asset to fit */
+
+    .pfpH { height: var(--pfpH); }
+
+    .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
+    .menu-item:hover { background:#0a1020; }
+
+    /* Post body styling (no typography plugin) */
     .post-body { max-width: 70ch; }
     .post-body p { color: #9fb2de; margin: .9rem 0; }
-    .post-body h1, .post-body h2, .post-body h3 { color: #ffffff; margin: 1.25rem 0 .5rem; }
-    .post-body a { color: #59a3ff; text-decoration: underline; }
-    .post-body img { max-width: 100%; border: 1px solid #22345b; border-radius: 12px; margin: 1rem 0; }
+    .post-body h1, .post-body h2, .post-body h3 { color:#fff; margin:1.25rem 0 .5rem; }
+    .post-body a { color:#59a3ff; text-decoration:underline; }
+    .post-body img { max-width:100%; border:1px solid #22345b; margin:1rem 0; }
     .post-body blockquote {
-      margin: 1rem 0; padding: .75rem 1rem;
-      border-left: 3px solid #59a3ff; background: #0d152b; color: #9fb2de; border-radius: 10px;
+      margin:1rem 0; padding:.75rem 1rem;
+      border-left:3px solid #59a3ff; background:#0d152b; color:#9fb2de;
     }
-    .post-body code { background: #0d152b; border: 1px solid #22345b; padding: .15rem .35rem; border-radius: 8px; }
-    .post-body pre { background: #0d152b; border: 1px solid #22345b; color: #e7efff; padding: 1rem; border-radius: 12px; overflow: auto; }
-  </style>
+    .post-body code { background:#0d152b; border:1px solid #22345b; padding:.15rem .35rem; }
+    .post-body pre { background:#0d152b; border:1px solid #22345b; color:#e7efff; padding:1rem; overflow:auto; }
 
-  <script defer src="/assets/main.js"></script>
+    /* Mobile: hide sidebar; show compact icon row */
+    @media (max-width: 767px){
+      #leftRail { display:none; }
+      #mobileCool { display:flex; }
+    }
+  </style>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
   <div class="flex flex-col md:flex-row min-h-screen">
-    <!-- LEFT RAIL -->
-    <aside class="w-full md:w-40 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
+
+    <!-- LEFT RAIL (desktop) -->
+    <aside id="leftRail" class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
-        <div class="h-44 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
-          <button id="pfpToggle" class="block rounded-full outline-none focus:ring-2 focus:ring-dark-accent">
-            <img src="/assets/images/channels4_profile.jpg"
-                 alt="Profile picture"
-                 class="h-24 w-24 rounded-full object-fill border-2 border-dark-line hover:border-dark-accent transition-colors sticky top-2">
+
+        <!-- PFP + dropdown -->
+        <div class="pfpH border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
+          <button id="pfpToggle" class="rounded-xl outline-none focus:ring-2 focus:ring-dark-accent">
+            <img
+              src="/assets/images/channels4_profile.jpg"
+              alt="Profile picture"
+              class="w-36 h-36 rounded-xl object-cover border-2 border-dark-line hover:border-dark-accent transition-colors"
+            >
           </button>
         </div>
 
-        <!-- Dropdown -->
         <div id="pfpMenu"
-             class="hidden absolute left-2 top-40 z-50 w-36 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
-          <a href="#" class="block px-3 py-2 text-dark-muted rounded hover:bg-dark-bg">Placeholder 1</a>
-          <a href="#" class="block px-3 py-2 text-dark-muted rounded hover:bg-dark-bg">Placeholder 2</a>
-          <a href="/admin/" class="block px-3 py-2 text-dark-accent font-semibold rounded hover:bg-dark-bg">Admin</a>
+             class="hidden absolute left-2 top-[170px] z-50 w-40 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
+          <a href="https://youtube.com/wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
+          <a href="https://discord.gg/WmZ5DVt5N2" target="_blank" rel="noopener" class="menu-item text-dark-muted">Discord</a>
+          <a href="https://github.com/Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">GitHub</a>
+          <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
+        <!-- Sidebar label + tiles (match homepage) -->
         <nav class="flex flex-row md:flex-col w-full">
-          <a href="{{ '/' | relative_url }}#blog" data-nav="blog" title="Blog"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Blog"
-                 alt="Blog Button" class="w-full h-full object-fill rounded block">
+          <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
+            <span class="text-lg font-semibold text-dark-text">Cool stuff</span>
+          </div>
+
+          <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
+             class="tile-btn w-full border-b-2 border-dark-line" title="Zen Browser">
+            <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="tile-img">
           </a>
-          <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="/assets/images/zen-browser.png"
-                 alt="Zen Browser Button" class="w-full h-full object-fill rounded block">
+
+          <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
+             class="tile-btn tile-windows w-full border-b-2 border-dark-line" title="Windows 11">
+            <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="tile-img">
           </a>
-          <a href="#" title="Button 3"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+3"
-                 alt="88x31 Button" class="w-full h-full object-fill rounded block">
-          </a>
-          <a href="#" title="Button 4"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+4"
-                 alt="88x31 Button" class="w-full h-full object-fill rounded block">
-          </a>
+
+          <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
+            <span class="text-xl text-dark-muted">Button 4</span>
+          </div>
         </nav>
       </div>
     </aside>
 
-    <!-- POST CONTENT -->
+    <!-- MAIN -->
     <main class="flex-1">
-      <header class="h-44 px-6 md:px-10 border-b-2 border-dark-line flex items-center">
-        <div>
+      <!-- Header aligned with left rail -->
+      <header class="pfpH px-6 md:px-10 border-b-2 border-dark-line flex items-center">
+        <div class="flex items-center gap-4 md:hidden">
+          <!-- small pfp for mobile, also opens dropdown -->
+          <button id="pfpToggleMobile" class="rounded-lg border border-dark-line">
+            <img src="/assets/images/channels4_profile.jpg" alt="Profile picture" class="h-10 w-10 rounded-lg pointer-events-none">
+          </button>
+          <div>
+            <a href="{{ '/' | relative_url }}#blog" class="text-dark-accent underline">&larr; Back</a>
+            <h1 class="text-2xl font-bold text-white mt-1">{{ page.title }}</h1>
+            <p class="text-sm text-dark-muted">{{ page.date | date: "%B %-d, %Y" }}</p>
+          </div>
+        </div>
+
+        <div class="hidden md:block">
           <a href="{{ '/' | relative_url }}#blog" class="text-dark-accent underline">&larr; Back</a>
           <h1 class="text-4xl md:text-5xl font-bold text-white mt-2">{{ page.title }}</h1>
           <p class="text-dark-muted mt-2">{{ page.date | date: "%B %-d, %Y" }}</p>
         </div>
       </header>
 
-      <article class="p-6 md:p-10 leading-relaxed">
+      <!-- Mobile “cool stuff” row -->
+      <div id="mobileCool" class="hidden p-3 gap-3 border-b-2 border-dark-line">
+        <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
+           class="relative w-28 h-12 overflow-hidden border border-dark-line">
+          <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="absolute inset-0 w-full h-full object-cover">
+        </a>
+        <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
+           class="relative w-28 h-12 overflow-hidden border border-dark-line">
+          <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="absolute inset-0 w-full h-full object-fill">
+        </a>
+      </div>
+
+      <!-- Article -->
+      <article class="p-6 md:p-10">
         {% if page.image %}
-          <img src="{{ page.image | relative_url }}" alt="" class="mt-2 mb-6 rounded border border-dark-line" />
+          <img src="{{ page.image | relative_url }}" alt="" class="mt-2 mb-6 border border-dark-line" />
         {% endif %}
-        <!-- The important part: render the Markdown body with explicit styling -->
         <div class="post-body">
           {{ content }}
         </div>
       </article>
     </main>
   </div>
+
+  <!-- PFP dropdown logic (desktop + mobile) -->
+  <script>
+    const menu  = document.getElementById('pfpMenu');
+    const btn1  = document.getElementById('pfpToggle');
+    const btn2  = document.getElementById('pfpToggleMobile');
+
+    const toggleMenu = (e) => {
+      e?.preventDefault?.();
+      menu.classList.toggle('hidden');
+    };
+
+    btn1?.addEventListener('click', toggleMenu);
+    btn2?.addEventListener('click', toggleMenu);
+
+    document.addEventListener('click', (e) => {
+      const insideBtn = e.target.closest('#pfpToggle, #pfpToggleMobile');
+      const insideMenu = e.target.closest('#pfpMenu');
+      if (!insideBtn && !insideMenu) menu.classList.add('hidden');
+    }, { passive: true });
+  </script>
 </body>
 </html>
