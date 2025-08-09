@@ -1,4 +1,4 @@
-title: "Woodrum's Blog"
+title: "Woodrum's Page"
 url: "https://wooldrum.github.io"
 baseurl: ""   # user sites keep this empty
 
@@ -8,7 +8,6 @@ theme: null
 permalink: /blog/:year/:month/:day/:slug/
 paginate: 0
 
-# Keep things simple; no plugins needed for GitHub Pages
 defaults:
   - scope:
       path: ""
