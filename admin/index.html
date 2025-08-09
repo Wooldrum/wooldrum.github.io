@@ -3,60 +3,115 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Editor — Woodrum</title>
-  <meta name="color-scheme" content="dark">
-
-  <!-- Brand variables (match site) -->
+  <title>Admin — Woodrum</title>
+  <meta name="color-scheme" content="dark" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { mono: ['IBM Plex Mono','ui-monospace','SFMono-Regular','Menlo','Consolas','monospace'] },
+          colors: {
+            'dark-bg':'#0a1020',
+            'dark-panel':'#0d152b',
+            'dark-line':'#22345b',
+            'dark-text':'#e7efff',
+            'dark-muted':'#9fb2de',
+            'dark-accent':'#59a3ff',
+          },
+          borderRadius: { xl: '14px' }
+        }
+      }
+    }
+  </script>
   <style>
-    :root{
-      --bg:#0a1020;
-      --panel:#0d152b;
-      --line:#22345b;
-      --text:#e7efff;
-      --muted:#9fb2de;
-      --accent:#59a3ff;
-      --danger:#ff6961;
-      --success:#59ffa3;
-      --radius:12px;
+    html,body{height:100%} body{background:#0a1020;color:#e7efff;font-family:'IBM Plex Mono',monospace}
+    .input, .select, .textarea{
+      background:#0b1430; color:#e7efff; border:1px solid #22345b; border-radius:12px; outline:none;
     }
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-                   Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
-                   "Segoe UI Emoji";
+    .input:focus,.select:focus,.textarea:focus{ box-shadow:0 0 0 2px #59a3ff44; border-color:#59a3ff }
+    .btn{
+      background:#59a3ff; color:#001019; font-weight:700; border-radius:12px; border:1px solid #22345b;
     }
-    /* Preload styles so there’s no flash */
-    #app{min-height:100vh;background:var(--bg)}
+    .btn:hover{ filter:brightness(1.08) }
+    .card{ background:#0d152b; border:1px solid #22345b; border-radius:14px }
+    .ghost{ background:#0b1430 }
   </style>
-
-  <!-- Our overrides for Decap UI -->
-  <link rel="stylesheet" href="./admin.css">
-  <!-- Post preview styles (uses site palette & type scale) -->
-  <link rel="stylesheet" href="./preview.css">
 </head>
 <body>
-  <div id="app"></div>
+  <!-- Top bar -->
+  <header class="sticky top-0 z-20 border-b border-dark-line bg-dark-panel">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="/assets/images/channels4_profile.jpg" alt="" class="w-8 h-8 rounded-full border border-dark-line">
+        <strong class="text-white text-lg">Admin</strong>
+        <span class="text-dark-muted hidden sm:inline">• Woodrum</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="newPostBtn" class="btn px-4 py-2 hidden">New Post</button>
+        <button id="loginBtn" class="btn px-4 py-2">Login with GitHub</button>
+        <button id="logoutBtn" class="px-3 py-2 rounded-xl border border-dark-line text-dark-muted hover:text-dark-text hover:bg-dark-bg hidden">Logout</button>
+      </div>
+    </div>
+  </header>
 
-  <!-- Decap CMS -->
-  <script src="https://unpkg.com/decap-cms-app@^3.0.0/dist/decap-cms.js"></script>
+  <!-- App -->
+  <main class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Left: list + editor -->
+    <section class="space-y-6">
+      <!-- Posts list -->
+      <div class="card p-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-white">Posts</h2>
+          <input id="search" class="input px-3 py-2 w-48" placeholder="Search…" />
+        </div>
+        <ul id="postList" class="mt-3 divide-y divide-dark-line"></ul>
+      </div>
 
-  <script>
-    // Load preview CSS into iframe as well
-    window.CMS?.registerPreviewStyle('./preview.css');
+      <!-- Editor -->
+      <div class="card p-4">
+        <h2 class="text-xl font-bold text-white">Editor</h2>
+        <form id="editor" class="mt-3 space-y-3">
+          <input type="hidden" id="editPath">
+          <label class="block text-sm text-dark-muted">Title</label>
+          <input id="title" class="input w-full px-3 py-2" placeholder="Post title" />
 
-    // Optional: simple “published” badge color tweak
-    CMS.registerEventListener({
-      name: 'preSave',
-      handler: ({entry}) => entry
-    });
-  </script>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm text-dark-muted">Date</label>
+              <input id="date" type="datetime-local" class="input w-full px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm text-dark-muted">Image (uploads to assets/images/)</label>
+              <input id="imageFile" type="file" accept="image/*" class="block w-full text-sm text-dark-muted" />
+              <input id="imageUrl" class="input mt-2 w-full px-3 py-2" placeholder="or paste existing /assets/images/… path" />
+            </div>
+          </div>
 
-  <!-- Use external config.yml (below) -->
-  <script>
-    // Nothing else needed—Decap auto-loads /admin/config.yml
-  </script>
+          <label class="block text-sm text-dark-muted">Body (Markdown)</label>
+          <textarea id="body" rows="12" class="textarea w-full p-3"></textarea>
+
+          <div class="flex gap-3">
+            <button id="saveBtn" class="btn px-4 py-2" type="submit">Save</button>
+            <button id="deleteBtn" class="px-3 py-2 rounded-xl border border-dark-line text-red-300 hover:bg-red-500/10 hidden" type="button">Delete</button>
+            <button id="resetBtn" class="px-3 py-2 rounded-xl border border-dark-line text-dark-muted hover:text-dark-text hover:bg-dark-bg" type="button">Reset</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Right: preview -->
+    <section class="card p-4">
+      <h2 class="text-xl font-bold text-white">Preview</h2>
+      <article id="preview" class="prose prose-invert max-w-none mt-3">
+        <p class="text-dark-muted">Start a new post or pick one from the list.</p>
+      </article>
+    </section>
+  </main>
+
+  <script type="module" src="./admin.js"></script>
 </body>
 </html>
