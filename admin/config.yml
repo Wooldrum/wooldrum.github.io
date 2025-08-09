@@ -1,1 +1,27 @@
+backend:
+  name: github
+  repo: wooldrum/wooldrum.github.io
+  branch: main
+  base_url: https://YOUR-VERCEL-OAUTH-APP.vercel.app   # replace after deploy
+  auth_endpoint: auth
+
+site_url: https://wooldrum.github.io
+logo_url: https://wooldrum.github.io/assets/images/channels4_profile.jpg
+
+media_folder: "assets/images"
+public_folder: "/assets/images"
+
+publish_mode: simple   # direct commit to main
+
+collections:
+  - name: "posts"
+    label: "Posts"
+    folder: "_posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Publish Date", name: "date", widget: "datetime"}
+      - {label: "Hero Image", name: "image", widget: "image", required: false}
+      - {label: "Body", name: "body", widget: "markdown"}
 
