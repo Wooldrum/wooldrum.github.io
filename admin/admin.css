@@ -1,9 +1,7 @@
-/* Woodrum Admin Theme v2 — softer contrast, fully-themed MUI/Decap controls
-   Save as /admin/admin.css
-*/
+/* Woodrum Admin Theme v2.1 — fix white background + keep soft dark UI
+   Save as /admin/admin.css and hard refresh (/admin) */
 
 :root{
-  /* Softer palette */
   --bg:         #0b1225;
   --panel:      #0e1730;
   --panel-2:    #101a36;
@@ -21,21 +19,25 @@
 }
 
 * { box-sizing: border-box; }
-html, body { height: 100%; }
 
-html, body {
+/* FORCE the dark background everywhere (fixes the “all white” page) */
+html, body,
+#root, #nc-root, .nc-app,
+[data-testid="root"], [data-testid="app"] {
+  min-height: 100vh !important;
   background:
     radial-gradient(60% 80% at 10% -10%, rgba(89,163,255,.08), transparent 40%),
     radial-gradient(40% 60% at 110% 10%, rgba(89,163,255,.06), transparent 50%),
-    var(--bg);
-  color: var(--text);
+    var(--bg) !important;
+  color: var(--text) !important;
   font-family: 'IBM Plex Mono', monospace;
   color-scheme: dark;
 }
 
-/* Root containers */
-#nc-root, .nc-app, [data-testid="app"], [data-testid="root"] {
-  background: transparent !important;
+/* Some builds wrap inside extra containers; make them dark too */
+.MuiContainer-root, .MuiPaper-root, .MuiDrawer-paper, .MuiAppBar-colorPrimary,
+[data-testid="main-content"], [data-testid="content"], [class*="MainContent"] {
+  background: var(--bg) !important;
   color: var(--text) !important;
 }
 
@@ -65,28 +67,26 @@ html, body {
   background: var(--panel) !important;
   border: 1px solid var(--line) !important;
   border-radius: var(--radius) !important;
-  box-shadow: none !important;
 }
 [class*="EntryCard"]:hover { border-color: var(--accent) !important; }
 
-/* Editor / Preview layout */
-[class*="Editor"], [data-testid="editor"] { background: transparent !important; }
+/* Editor / Preview */
+[class*="Editor"], [data-testid="editor"] { background: var(--bg) !important; }
 [class*="EditorPane"], [data-testid="editor-pane"] { background: var(--bg) !important; }
 [class*="PreviewPane"], [data-testid="preview-pane"] {
   background: var(--panel) !important;
   border-left: 1px solid var(--line) !important;
 }
-/* Split resizer line */
 [class*="Resizer"] { background: var(--line) !important; opacity: .35 !important; }
 
-/* Form fields */
+/* Fields */
 input, textarea, select {
   background: #0b1631 !important;
   color: var(--text) !important;
   border: 1px solid var(--line) !important;
   border-radius: var(--radius-sm) !important;
   outline: none !important;
-  transition: border-color .15s ease, box-shadow .15s ease;
+  transition: border-color .15s, box-shadow .15s;
 }
 input::placeholder, textarea::placeholder { color: var(--muted) !important; }
 input:focus, textarea:focus, select:focus {
@@ -97,7 +97,7 @@ label, small, .hint, .description, [class*="Subtle"], [data-testid="field-hint"]
   color: var(--muted) !important;
 }
 
-/* Rich text / CodeMirror */
+/* Editors */
 [class*="RichTextEditor"], .CodeMirror, .cm-s-default {
   background: #0b1631 !important;
   color: var(--text) !important;
@@ -108,74 +108,47 @@ label, small, .hint, .description, [class*="Subtle"], [data-testid="field-hint"]
 .CodeMirror-cursor  { border-left: 2px solid var(--accent) !important; }
 .CodeMirror-selected{ background: rgba(89,163,255,.25) !important; }
 
-/* === Toolbars & chips (the previous "too white/blue" bits) === */
+/* Toolbar + chips */
 [class*="Toolbar"], [data-testid="toolbar"] {
   background: var(--panel-2) !important;
   border: 1px solid var(--line) !important;
   border-radius: var(--radius-sm) !important;
 }
-[class*="Toolbar"] button,
-[class*="Toolbar"] [role="button"] {
-  background: transparent !important;
-  color: var(--muted) !important;
-  border: 1px solid transparent !important;
-  border-radius: 10px !important;
-}
+[class*="Toolbar"] button { background: transparent !important; color: var(--muted) !important; border-radius: 10px !important; }
 [class*="Toolbar"] button:hover { background: rgba(255,255,255,.06) !important; color: var(--text) !important; }
+.MuiChip-root {
+  background: var(--panel-2) !important; color: var(--text) !important;
+  border: 1px solid var(--line) !important; border-radius: 999px !important;
+}
+.MuiChip-root:hover { border-color: var(--accent) !important; }
 
-/* MUI buttons */
+/* Buttons */
 button, [role="button"], .Button, .nc-button, .nc-btn, .MuiButton-root {
-  border-radius: var(--radius-sm) !important;
-  border: 1px solid transparent !important;
-  box-shadow: none !important;
-  font-weight: 600 !important;
+  border-radius: var(--radius-sm) !important; border: 1px solid transparent !important;
+  box-shadow: none !important; font-weight: 600 !important;
 }
 .MuiButton-containedPrimary,
 button[class*="primary"], .Button--primary, .nc-button-primary, .nc-btn-primary {
   background: linear-gradient(180deg, var(--accent), var(--accent-900)) !important;
   color: #000 !important;
 }
-.MuiButton-containedPrimary:hover,
-button[class*="primary"]:hover { filter: brightness(1.05) !important; }
 .MuiButton-outlined, .Button--secondary, .nc-btn-default {
-  background: var(--panel) !important;
-  color: var(--text) !important;
-  border-color: var(--line) !important;
+  background: var(--panel) !important; color: var(--text) !important; border-color: var(--line) !important;
 }
-.MuiButton-outlined:hover, .Button--secondary:hover { border-color: var(--accent) !important; }
-
-/* Chips (e.g., “Now”, “Clear”, status pills) */
-.MuiChip-root {
-  background: var(--panel-2) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 999px !important;
-}
-.MuiChip-root:hover { border-color: var(--accent) !important; }
-.MuiChip-deleteIcon, .MuiChip-icon { color: var(--muted) !important; }
-
-/* Toggles, switches, radio */
-.MuiSwitch-track { background-color: var(--line) !important; }
-.MuiSwitch-thumb  { background-color: var(--accent) !important; }
-.Mui-checked + .MuiSwitch-track { background-color: rgba(89,163,255,.4) !important; }
 
 /* Menus / popovers / dropdowns */
 .MuiPaper-root, [role="menu"], [class*="Menu"] {
-  background: var(--panel-2) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: var(--radius) !important;
+  background: var(--panel-2) !important; color: var(--text) !important;
+  border: 1px solid var(--line) !important; border-radius: var(--radius) !important;
   box-shadow: var(--shadow-1) !important;
 }
 .MuiMenuItem-root { color: var(--text) !important; }
 .MuiMenuItem-root:hover { background: rgba(255,255,255,.06) !important; }
 
-/* Select controls */
+/* Selects */
 .MuiOutlinedInput-root, .MuiSelect-outlined {
-  background: #0b1631 !important;
-  color: var(--text) !important;
-  border-color: var(--line) !important;
-  border-radius: var(--radius-sm) !important;
+  background: #0b1631 !important; color: var(--text) !important;
+  border-color: var(--line) !important; border-radius: var(--radius-sm) !important;
 }
 .MuiOutlinedInput-notchedOutline { border-color: var(--line) !important; }
 .Mui-focused .MuiOutlinedInput-notchedOutline { border-color: var(--accent) !important; }
@@ -185,22 +158,21 @@ button[class*="primary"]:hover { filter: brightness(1.05) !important; }
 .MuiTab-root  { color: var(--muted) !important; }
 .Mui-selected { color: var(--text) !important; }
 
-/* Toasts / alerts */
+/* Toasts / alerts + backdrop */
 [role="alert"], [class*="Snackbar"] {
-  background: var(--panel-2) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: var(--radius) !important;
+  background: var(--panel-2) !important; color: var(--text) !important;
+  border: 1px solid var(--line) !important; border-radius: var(--radius) !important;
 }
+.MuiBackdrop-root { background-color: rgba(3,10,24,.7) !important; }
 
 /* Media library */
-[data-testid="media-library"], [class*="MediaLibrary"]{ background: var(--panel) !important; }
+[data-testid="media-library"], [class*="MediaLibrary"] { background: var(--panel) !important; }
 
 /* Links */
 a { color: var(--accent) !important; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* Scrollbars (webkit) */
+/* Scrollbars */
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
 *::-webkit-scrollbar-track { background: transparent; }
