@@ -1,0 +1,47 @@
+/* This CSS is injected into the preview iframe */
+:root{
+  --bg: #0a1020;
+  --panel:#0d152b;
+  --line:#22345b;
+  --text:#e7efff;
+  --muted:#9fb2de;
+  --accent:#59a3ff;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  margin: 0; padding: 24px;
+}
+
+/* A simple “prose” look aligned with your site */
+.prose {
+  max-width: 70ch;
+  line-height: 1.6;
+}
+.prose h1, .prose h2, .prose h3 { color: #fff; margin: 1.2em 0 .4em; }
+.prose p { color: var(--muted); margin: .75em 0; }
+.prose a { color: var(--accent); text-decoration: underline; }
+.prose img { max-width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+.prose blockquote {
+  margin: 1em 0; padding: .75em 1em;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  color: var(--muted);
+  border-radius: 8px;
+}
+.prose code {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: .15em .35em; border-radius: 6px;
+}
+.prose pre {
+  background: var(--panel); color: var(--text);
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 1em; overflow: auto;
+}
+
+/* Wrap the CMS-rendered content */
+#preview-root { display: block; }
+#preview-root > * { margin: 0 auto; }
