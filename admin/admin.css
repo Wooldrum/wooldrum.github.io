@@ -48,7 +48,7 @@ html,body,#root,#nc-root,.nc-app{
 }
 
 /* === Core content area cards, lists, and papers (make dark, always) === */
-.MuiPaper-root,.MuiPopover-paper,.MuiMenu-paper,.MuiDrawer-paper,.MuiCard-root{
+#root .MuiPaper-root, #root .MuiPopover-paper, #root .MuiMenu-paper, #root .MuiDrawer-paper, #root .MuiCard-root{
   background:var(--panel-2) !important;
   color:var(--text) !important;
   border:1px solid var(--line) !important;
