@@ -13,7 +13,7 @@
     tailwind.config = {
       theme: {
         extend: {
-          spacing: { '44': '11rem' }, /* used by avatar tile */
+          spacing: { '44': '11rem' },  /* avatar tile height */
           colors: {
             'dark-bg':     '#0a1020',
             'dark-panel':  '#0d152b',
@@ -28,31 +28,34 @@
     }
   </script>
 
-  <!-- Markdown + sanitize for About -->
+  <!-- Markdown + sanitize (for About) -->
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
   <style>
+    :root { --pfp-h: 176px; } /* fallback = 11rem */
+
     body { font-family: 'IBM Plex Mono', monospace; }
     html, body { overflow: visible; }
-
-    /* hide About in “blog-only” view */
     body.blog-mode #about { display: none; }
 
     /* sidebar tiles */
-    .tile { height: 4rem; }                 /* each button row */
-    .tile-img-wrap { height: 4rem; overflow: hidden; border-radius: 0.75rem; }
-    .tile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .tile       { height: 4rem; }
+    .tile-clip  { position: relative; height: 4rem; border-radius: 0.75rem; overflow: hidden; }
+    .tile-img   { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    /* pfp tile (square, fills box) */
+    /* avatar tile (strict square) */
     .pfp-wrap { width: 100%; height: 11rem; padding: 0.75rem; }
-    .pfp-img  { width: 100%; height: 100%; object-fit: cover; border-radius: 0.75rem; }
+    .pfp-img  { width: 100%; height: 100%; object-fit: cover; border-radius: 0.75rem; display:block; }
 
-    /* menu (desktop) */
+    /* header height is driven by the avatar height so the bottom borders line up */
+    #pageHeader { height: var(--pfp-h); }
+
+    /* simple link hover */
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
     .menu-item:hover { background:#0a1020; }
 
-    /* post body typography on detail pages (kept for consistency) */
+    /* detail page typography kept for consistency */
     .post-body { max-width: 70ch; }
     .post-body p { color: #9fb2de; margin: .9rem 0; }
     .post-body h1, .post-body h2, .post-body h3 { color: #ffffff; margin: 1.25rem 0 .5rem; }
@@ -64,8 +67,6 @@
     }
     .post-body code { background: #0d152b; border: 1px solid #22345b; padding: .15rem .35rem; border-radius: 8px; }
     .post-body pre { background: #0d152b; border: 1px solid #22345b; color: #e7efff; padding: 1rem; border-radius: 12px; overflow: auto; }
-
-    /* mobile tweaks come from main.js (class toggles) */
   </style>
 
   <script defer src="/assets/main.js"></script>
@@ -76,18 +77,16 @@
     <!-- LEFT RAIL -->
     <aside class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
-        <!-- PFP (square 1:1; click opens menu) -->
+        <!-- PFP (square; click opens menu) -->
         <div class="pfp-wrap border-b-2 border-dark-line flex-shrink-0">
           <button id="pfpToggle" class="block w-full h-full rounded-tile outline-none focus:ring-2 focus:ring-dark-accent">
-            <img
-              src="/assets/images/channels4_profile.jpg"
-              alt="Profile picture"
-              class="pfp-img border-2 border-dark-line hover:border-dark-accent transition-colors"
-            >
+            <img src="/assets/images/channels4_profile.jpg"
+                 alt="Profile picture"
+                 class="pfp-img border-2 border-dark-line hover:border-dark-accent transition-colors">
           </button>
         </div>
 
-        <!-- Dropdown (desktop) -->
+        <!-- Dropdown -->
         <div id="pfpMenu"
              class="hidden absolute left-2 top-40 z-50 w-40 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
           <a href="https://youtube.com/@Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
@@ -96,30 +95,30 @@
           <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
-        <!-- Buttons -->
+        <!-- Tiles -->
         <nav class="flex flex-row md:flex-col w-full">
-          <!-- Cool stuff (just the label tile on desktop; hidden on mobile by JS) -->
+          <!-- label (hidden on mobile by JS) -->
           <div class="tile w-full flex items-center justify-center border-b-2 border-dark-line">
-            <a href="#blog" data-nav="blog" class="text-lg font-semibold">Cool stuff</a>
+            <a href="#blog" class="text-lg font-semibold">Cool stuff</a>
           </div>
 
-          <!-- Zen (image fills box) -->
-          <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
+          <!-- Zen -->
+          <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
              class="tile w-full flex items-center justify-center border-b-2 border-dark-line px-2">
-            <span class="tile-img-wrap w-full">
+            <span class="tile-clip w-full">
               <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="tile-img">
             </span>
           </a>
 
-          <!-- Windows (fills box) -->
-          <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" title="Windows 11"
+          <!-- Windows -->
+          <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
              class="tile w-full flex items-center justify-center border-b-2 border-dark-line px-2">
-            <span class="tile-img-wrap w-full">
+            <span class="tile-clip w-full">
               <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="tile-img">
             </span>
           </a>
 
-          <!-- Placeholder 4 -->
+          <!-- Placeholder -->
           <a href="#" class="tile w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
             <span class="text-xl">Button 4</span>
           </a>
@@ -129,17 +128,16 @@
 
     <!-- MAIN -->
     <main class="flex-1">
-      <!-- Header (height auto-sync’d to avatar tile by JS to align the horizontal line) -->
+      <!-- Header: height is synced to avatar tile -->
       <header id="pageHeader" class="px-6 md:px-10 border-b-2 border-dark-line flex flex-col justify-center">
         <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
         <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
       </header>
 
-      <!-- About (content comes from assets/content/about.md) -->
+      <!-- About (from assets/content/about.md) -->
       <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
         <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
         <div id="aboutContent" class="text-dark-muted leading-relaxed max-w-prose">
-          <!-- filled by JS from assets/content/about.md -->
           <p class="opacity-60">Loading…</p>
         </div>
       </section>
