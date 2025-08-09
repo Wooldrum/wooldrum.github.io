@@ -1,0 +1,18 @@
+title: "Woodrum's Blog"
+url: "https://wooldrum.github.io"
+baseurl: ""   # user sites keep this empty
+
+markdown: kramdown
+theme: null
+
+permalink: /blog/:year/:month/:day/:slug/
+paginate: 0
+
+# Keep things simple; no plugins needed for GitHub Pages
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      author: "Woodrum"
