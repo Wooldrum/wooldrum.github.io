@@ -33,31 +33,29 @@
   </script>
 
   <style>
-    :root{ --pfpH:176px; }        /* shared height so the header rule lines up with sidebar rule */
+    :root{ --pfpH:176px; }  /* desktop header height to align with sidebar tile */
 
     html, body { overflow: visible; }
-    body { font-family: 'IBM Plex Mono', monospace; }
+    body { font-family: 'IBM Plex Mono', monospace; padding-top: env(safe-area-inset-top); }
 
     /* Blog-only view hides About */
     body.blog-mode #about { display: none; }
 
-    /* Sidebar tiles */
+    /* Sidebar tiles (desktop) */
     .tile-btn{
       position: relative;
-      height: 64px; /* h-16 */
+      height: 64px;             /* h-16 */
       overflow: hidden;
-      /* SQUARE SIDEBAR TILES: make corners sharp */
-      border-radius: 0;
+      border-radius: 0;         /* square corners as requested */
       background: #0d152b;
       display: block;
     }
     .tile-img{
       position:absolute; inset:0;
       width:100%; height:100%;
-      object-fit:cover;         /* nice crop for normal assets */
+      object-fit:cover;
       display:block;
-      /* SQUARE ON THE IMAGE TOO */
-      border-radius: 0;
+      border-radius: 0;         /* square image corners too */
     }
     /* Force Windows to fill (squish) to the box exactly */
     .tile-windows .tile-img{ object-fit:fill; }
@@ -66,13 +64,10 @@
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
     .menu-item:hover { background:#0a1020; }
 
-    /* Align header + sidebar horizontal rule perfectly by sharing height */
-    .pfpH { height: var(--pfpH); }
-
-    /* Mobile: hide sidebar; show compact icon row */
-    @media (max-width: 767px){
-      #leftRail { display:none; }
-      #mobileCool { display:flex; }
+    /* Header height: automatic on mobile, fixed on desktop to match sidebar */
+    .headerH { height: auto; }
+    @media (min-width: 768px){
+      .headerH { height: var(--pfpH); }
     }
   </style>
 
@@ -87,11 +82,11 @@
   <div class="flex flex-col md:flex-row min-h-screen">
 
     <!-- LEFT RAIL (desktop only) -->
-    <aside id="leftRail" class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
-      <div class="flex flex-row md:flex-col relative">
+    <aside id="leftRail" class="hidden md:block md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
+      <div class="flex flex-col relative">
 
         <!-- PFP (click = dropdown) -->
-        <div class="pfpH border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
+        <div class="border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center" style="height: var(--pfpH);">
           <button id="pfpToggle" class="rounded-xl outline-none focus:ring-2 focus:ring-dark-accent">
             <img
               src="/assets/images/channels4_profile.jpg"
@@ -111,7 +106,7 @@
         </div>
 
         <!-- Sidebar labels + tiles -->
-        <nav class="flex flex-row md:flex-col w-full">
+        <nav class="w-full">
           <!-- Label only (not a link) -->
           <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
             <span class="text-lg font-semibold text-dark-text">Cool stuff</span>
@@ -139,16 +134,17 @@
 
     <!-- MAIN -->
     <main class="flex-1">
-      <!-- Header (shares height with PFP tile so the border lines up perfectly) -->
-      <header class="pfpH px-6 md:px-10 border-b-2 border-dark-line flex items-center">
-        <div class="flex items-center gap-4 md:hidden">
-          <!-- small pfp for mobile -->
+      <!-- Header -->
+      <header class="headerH px-6 md:px-10 border-b-2 border-dark-line flex items-center">
+        <!-- Mobile header content -->
+        <div class="flex items-center gap-4 md:hidden py-3">
           <img src="/assets/images/channels4_profile.jpg" alt="Profile picture" class="h-10 w-10 rounded-lg border border-dark-line">
           <div>
             <h1 class="text-2xl font-bold text-white">Woodrum's Page</h1>
             <p class="text-sm text-dark-muted -mt-1">Welcome to my personal corner of the internet.</p>
           </div>
         </div>
+        <!-- Desktop header content -->
         <div class="hidden md:block">
           <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
           <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
@@ -156,13 +152,13 @@
       </header>
 
       <!-- Mobile compact icons (replaces sidebar on small screens) -->
-      <div id="mobileCool" class="hidden p-3 gap-3 border-b-2 border-dark-line">
+      <div id="mobileCool" class="md:hidden p-3 pt-4 mt-2 gap-3 border-b-2 border-dark-line flex">
         <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
-           class="relative w-24 h-12 rounded-xl overflow-hidden border border-dark-line">
+           class="relative w-24 h-12 overflow-hidden border border-dark-line">
           <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="absolute inset-0 w-full h-full object-cover">
         </a>
         <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
-           class="relative w-24 h-12 rounded-xl overflow-hidden border border-dark-line">
+           class="relative w-24 h-12 overflow-hidden border border-dark-line">
           <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="absolute inset-0 w-full h-full object-fill">
         </a>
       </div>
