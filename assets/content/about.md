@@ -1,3 +1,1 @@
-Hey, I’m Woodrum.
-
-I make things, break things, then write about it. This site is intentionally simple—just HTML, Tailwind, and a dash of JS.
+Howdy! I'm Wooldrum and this is my blog! I will probably post stuff on here like tech, politics, my personal life, and just whatever I think of really. I'm all over the place really so watch out..
