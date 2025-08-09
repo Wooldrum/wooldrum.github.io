@@ -1,397 +1,394 @@
-// admin/admin.js  — custom dark admin, no Decap
+/* admin/admin.js — custom admin with Posts + Assets
 
-// --------- CONFIG ----------
+   CONFIG
+*/
 const OWNER = "Wooldrum";
 const REPO = "wooldrum.github.io";
 const BRANCH = "main";
 const POSTS_DIR = "_posts";
 const IMAGES_DIR = "assets/images";
+const LOGIN_PAGE = "/admin/login.html";
 
-// Your deployed Vercel OAuth host
 const OAUTH_HOST = "https://wooldrum-decap-oauth.vercel.app";
-// Send token back to this page:
-const RETURN_TO = "https://wooldrum.github.io/admin/index.html";
+const RETURN_TO = `${location.origin}${LOGIN_PAGE}`;
 
-// --------- DYNAMIC LIBS (Markdown preview) ----------
-const { marked } = await import("https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js");
-const DOMPurifyMod = await import("https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js");
-const DOMPurify = DOMPurifyMod.default || window.DOMPurify;
+// DOM
+const postsList = document.getElementById("postsList");
+const tabBtns = document.querySelectorAll(".tab-btn");
+const tabPosts = document.getElementById("tab-posts");
+const tabAssets = document.getElementById("tab-assets");
 
-// --------- STATE ----------
+const titleEl = document.getElementById("title");
+const dateEl = document.getElementById("date");
+const imgFileEl = document.getElementById("imgFile");
+const imgPathEl = document.getElementById("imgPath");
+const bodyEl = document.getElementById("body");
+
+const saveBtn = document.getElementById("saveBtn");
+const resetBtn = document.getElementById("resetBtn");
+const newPostBtn = document.getElementById("newPostBtn");
+const previewEl = document.getElementById("preview");
+
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+
+const toolbar = document.querySelector(".toolbar");
+const fontSizeSel = document.getElementById("fontSize");
+
+// ASSETS
+const assetUploadEl = document.getElementById("assetUpload");
+const refreshAssetsBtn = document.getElementById("refreshAssets");
+const assetsGrid = document.getElementById("assetsGrid");
+
+// STATE
 let token = null;
-let current = null; // { path, sha, frontmatter, body }
+let currentPath = null; // e.g., "_posts/2025-08-09-slug.md"
+let currentSha = null;
 
-// --------- ELEMENTS ----------
-const el = (id) => document.getElementById(id);
-const postList = el("postList");
-const searchEl = el("search");
-const titleEl = el("title");
-const dateEl = el("date");
-const imgFileEl = el("imageFile");
-const imgUrlEl = el("imageUrl");
-const bodyEl = el("body");
-const editPathEl = el("editPath");
-const previewEl = el("preview");
-const loginBtn = el("loginBtn");
-const logoutBtn = el("logoutBtn");
-const newPostBtn = el("newPostBtn");
-const deleteBtn = el("deleteBtn");
+/* --------- Helpers --------- */
+const gh = (path) => `https://api.github.com/repos/${OWNER}/${REPO}/${path}`;
+const headers = () => ({
+  "Accept": "application/vnd.github+json",
+  "Authorization": `token ${token}`,
+  "Content-Type": "application/json"
+});
 
-// --------- UTIL ----------
-const b64 = (str) => btoa(unescape(encodeURIComponent(str)));
-const unb64 = (str) => decodeURIComponent(escape(atob(str)));
-const pad2 = (n) => String(n).padStart(2, "0");
-const fmtDate = (d) => {
-  const x = new Date(d);
-  // datetime-local needs local time without seconds
-  const yyyy = x.getFullYear();
-  const mm = pad2(x.getMonth() + 1);
-  const dd = pad2(x.getDate());
-  const hh = pad2(x.getHours());
-  const mi = pad2(x.getMinutes());
-  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-};
-const toFrontmatter = (data) => {
-  const lines = [
-    "---",
-    `layout: post`,
-    `author: Woodrum`,
-    `title: "${(data.title || "").replace(/"/g, '\\"')}"`,
-    `date: ${new Date(data.date).toISOString()}`,
-  ];
-  if (data.image) lines.push(`image: ${data.image}`);
-  lines.push("---", "", data.body || "");
-  return lines.join("\n");
-};
-const parseFrontmatter = (raw) => {
-  const m = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-  if (!m) return { fm: {}, body: raw };
-  const fm = {};
-  m[1].split("\n").forEach((line) => {
-    const i = line.indexOf(":");
-    if (i > -1) {
-      const key = line.slice(0, i).trim();
-      const value = line.slice(i + 1).trim().replace(/^"|"$/g, "");
-      fm[key] = value;
-    }
-  });
-  return { fm, body: m[2] || "" };
-};
-const slugify = (s) =>
-  s.toLowerCase().trim()
-    .replace(/[^\w\s-]/g, "")
+function toBase64(bytes) {
+  return btoa(String.fromCharCode(...bytes));
+}
+async function fileToBase64(file) {
+  const buf = await file.arrayBuffer();
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+function slugify(str) {
+  return String(str || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
-
-// GitHub REST wrapper
-async function gh(path, init = {}) {
-  if (!token) throw new Error("Not logged in");
-  const res = await fetch(`https://api.github.com${path}`, {
-    ...init,
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `token ${token}`,
-      "X-GitHub-Api-Version": "2022-11-28",
-      ...(init.headers || {}),
-    },
+}
+function pad(n){return `${n}`.padStart(2,"0")}
+function localDateTimeValue(d=new Date()){
+  // yyyy-MM-ddTHH:mm (LOCAL)
+  const yy=d.getFullYear();
+  const mm=pad(d.getMonth()+1);
+  const dd=pad(d.getDate());
+  const hh=pad(d.getHours());
+  const mi=pad(d.getMinutes());
+  return `${yy}-${mm}-${dd}T${hh}:${mi}`;
+}
+function parseMDFrontmatter(md){
+  // very small parser: returns {frontmatter:{}, body:""}
+  if(!md.startsWith("---")) return {frontmatter:{}, body:md};
+  const end = md.indexOf("\n---", 3);
+  if(end === -1) return {frontmatter:{}, body:md};
+  const yaml = md.slice(3, end).trim();
+  const body = md.slice(end + 4).trim();
+  const fm = {};
+  yaml.split("\n").forEach(line=>{
+    const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    if(m){ fm[m[1]] = m[2].replace(/^"(.*)"$/,"$1"); }
   });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`${res.status}: ${t}`);
-  }
-  return res.json();
+  return {frontmatter:fm, body};
 }
-async function getContent(path) {
-  return gh(`/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`);
+function buildMarkdown({title,date,image,body}){
+  const iso = new Date(date || Date.now()).toISOString();
+  const lines = [
+    "---",
+    `title: "${(title||"").replace(/"/g,'\\"')}"`,
+    `date: ${iso}`,
+    ...(image ? [`image: ${image}`] : []),
+    'layout: "post"',
+    "---",
+    body || ""
+  ];
+  return lines.join("\n")+"\n";
 }
-async function putContent(path, contentB64, message, sha) {
-  return gh(`/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
-    method: "PUT",
-    body: JSON.stringify({
-      message,
-      content: contentB64,
-      branch: BRANCH,
-      sha,
-    }),
-  });
+function md2html(md){
+  try{
+    const raw = marked.parse(md || "");
+    return DOMPurify.sanitize(raw);
+  }catch(e){ return "<p>Preview unavailable.</p>"; }
 }
-async function deleteContent(path, message, sha) {
-  return gh(`/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
-    method: "DELETE",
-    body: JSON.stringify({ message, branch: BRANCH, sha }),
-  });
-}
-
-// --------- AUTH ----------
-function setAuthedUI(on) {
+function setAuthedUI(on){
   loginBtn.classList.toggle("hidden", on);
   logoutBtn.classList.toggle("hidden", !on);
   newPostBtn.classList.toggle("hidden", !on);
+  saveBtn.classList.toggle("hidden", !on);
 }
+
+/* --------- AUTH ---------- */
 function readTokenFromHash() {
   if (location.hash.startsWith("#token=")) {
     const t = location.hash.slice(7);
     sessionStorage.setItem("gh_token", t);
     history.replaceState({}, "", location.pathname);
   }
-  token = sessionStorage.getItem("gh_token");
-  setAuthedUI(!!token);
 }
-loginBtn.addEventListener("click", () => {
-  const url = new URL(`${OAUTH_HOST}/api/auth`);
-  url.searchParams.set("provider", "github");
-  url.searchParams.set("site_id", "wooldrum.github.io");
-  url.searchParams.set("scope", "repo,user");
-  url.searchParams.set("returnTo", RETURN_TO);
-  location.href = url.toString();
+function ensureAuthed(){
+  readTokenFromHash();
+  token = sessionStorage.getItem("gh_token");
+  if(!token){
+    const next = `${location.pathname}${location.search}`;
+    location.replace(`${LOGIN_PAGE}?next=${encodeURIComponent(next)}`);
+    throw new Error("redirecting to login");
+  }
+  setAuthedUI(true);
+}
+loginBtn?.addEventListener("click", () => {
+  const next = `${location.pathname}${location.search}`;
+  location.href = `${LOGIN_PAGE}?next=${encodeURIComponent(next)}`;
 });
-logoutBtn.addEventListener("click", () => {
+logoutBtn?.addEventListener("click", () => {
   sessionStorage.removeItem("gh_token");
   token = null;
   setAuthedUI(false);
-  postList.innerHTML = "";
-  previewEl.innerHTML = `<p class="text-dark-muted">Logged out.</p>`;
+  location.replace(`${LOGIN_PAGE}?next=${encodeURIComponent("/admin/index.html")}`);
 });
-readTokenFromHash();
 
-// --------- POSTS LIST ----------
-async function listPosts() {
-  const items = await getContent(POSTS_DIR);
+/* --------- Tabs ---------- */
+function setActiveTab(which){
+  const onPosts = which === "posts";
+  tabBtns.forEach(b=>{
+    b.classList.toggle("active", b.dataset.tab===which);
+  });
+  tabPosts.classList.toggle("hidden", !onPosts);
+  tabAssets.classList.toggle("hidden", onPosts);
+}
+
+/* --------- GitHub contents API ---------- */
+async function getJSON(url){
+  const r = await fetch(url, { headers: headers() });
+  if(!r.ok) throw new Error(`GitHub ${r.status}: ${url}`);
+  return r.json();
+}
+async function getDir(dir){
+  return getJSON(gh(`contents/${dir}?ref=${BRANCH}`));
+}
+async function getFile(path){
+  return getJSON(gh(`contents/${path}?ref=${BRANCH}`));
+}
+async function putFile(path, contentBase64, message, sha=null){
+  const body = { message, content: contentBase64, branch: BRANCH };
+  if(sha) body.sha = sha;
+  const r = await fetch(gh(`contents/${path}`), {
+    method:"PUT", headers: headers(), body: JSON.stringify(body)
+  });
+  if(!r.ok){
+    const t = await r.text();
+    throw new Error(`PUT ${path} failed: ${r.status} ${t}`);
+  }
+  return r.json();
+}
+
+/* --------- Posts ---------- */
+async function listPosts(){
+  postsList.innerHTML = `<li class="text-sm text-dark-muted">Loading…</li>`;
+  const items = await getDir(POSTS_DIR);
   const files = items
-    .filter((i) => i.type === "file" && /\.md$/i.test(i.name))
-    .sort((a, b) => (a.name < b.name ? 1 : -1));
-
-  postList.innerHTML = "";
-  for (const f of files) {
-    const file = await getContent(`${POSTS_DIR}/${f.name}`);
-    const raw = unb64(file.content);
-    const { fm } = parseFrontmatter(raw);
+    .filter(i=> i.type==="file" && /\.md$/i.test(i.name))
+    .sort((a,b)=> b.name.localeCompare(a.name)); // newest by filename date
+  if(!files.length){
+    postsList.innerHTML = `<li class="text-sm text-dark-muted">No posts yet.</li>`;
+    return;
+  }
+  postsList.innerHTML = "";
+  for(const f of files){
     const li = document.createElement("li");
-    li.className = "py-3";
-    li.innerHTML = `
-      <button class="w-full text-left px-3 py-3 bg-[#0b1430] rounded-xl border border-dark-line hover:border-dark-accent">
-        <div class="text-white font-semibold">${fm.title || f.name}</div>
-        <div class="text-xs text-dark-muted">${fm.date ? new Date(fm.date).toLocaleString() : ""} • ${f.name}</div>
-      </button>`;
-    li.querySelector("button").addEventListener("click", () => loadPost(`${POSTS_DIR}/${f.name}`, file.sha, raw));
-    postList.appendChild(li);
+    li.className = "flex items-center justify-between gap-2";
+    const btn = document.createElement("button");
+    btn.className = "text-left hover:underline";
+    btn.textContent = f.name.replace(/\.md$/,"");
+    btn.addEventListener("click", ()=> loadPost(`${POSTS_DIR}/${f.name}`));
+    li.appendChild(btn);
+    postsList.appendChild(li);
   }
 }
+async function loadPost(path){
+  const json = await getFile(path);
+  const raw = atob(json.content);
+  currentPath = path;
+  currentSha  = json.sha;
 
-// --------- EDITOR / DATE NOW ----------
-function setDateNow() {
-  dateEl.value = fmtDate(new Date());
-}
-function fillEditor(path, sha, raw) {
-  const { fm, body } = parseFrontmatter(raw);
-  editPathEl.value = path;
-  current = { path, sha, frontmatter: fm, body };
-  titleEl.value = fm.title || "";
-  dateEl.value = fm.date ? fmtDate(fm.date) : fmtDate(new Date());
-  imgUrlEl.value = fm.image || "";
+  const {frontmatter, body} = parseMDFrontmatter(raw);
+  titleEl.value = frontmatter.title || "";
+  // prefer FM date, else derive from filename
+  const dt = frontmatter.date ? new Date(frontmatter.date) : new Date();
+  dateEl.value = localDateTimeValue(dt);
+  imgPathEl.value = (frontmatter.image || "");
   bodyEl.value = body || "";
-  deleteBtn.classList.remove("hidden");
+
   updatePreview();
+  window.scrollTo({top:0, behavior:"smooth"});
 }
-async function loadPost(path, shaHint, rawHint) {
-  if (!shaHint || !rawHint) {
-    const file = await getContent(path);
-    fillEditor(path, file.sha, unb64(file.content));
-  } else {
-    fillEditor(path, shaHint, rawHint);
-  }
+function setDateNow(){
+  dateEl.value = localDateTimeValue(new Date());
 }
-function resetEditor() {
-  current = null;
-  editPathEl.value = "";
-  titleEl.value = "";
+function resetEditor(){
+  currentPath = null; currentSha = null;
+  titleEl.value = ""; imgPathEl.value = ""; bodyEl.value = "";
   setDateNow();
-  imgFileEl.value = "";
-  imgUrlEl.value = "";
-  bodyEl.value = "";
-  deleteBtn.classList.add("hidden");
   updatePreview();
 }
-document.getElementById("resetBtn").addEventListener("click", resetEditor);
-document.getElementById("newPostBtn").addEventListener("click", resetEditor);
-setDateNow(); // auto-fill immediately on first load
+newPostBtn.addEventListener("click", resetEditor);
+resetBtn.addEventListener("click", resetEditor);
 
-// --------- EDITOR TOOLBAR (Bold, Italic, Link, Highlight, Size) ----------
-(function buildToolbar(){
-  const toolbar = document.createElement("div");
-  toolbar.className = "flex flex-wrap items-center gap-2 mb-2";
+async function savePost(){
+  const title = titleEl.value.trim();
+  const body  = bodyEl.value;
+  if(!title){ alert("Title is required."); return; }
 
-  const btnClass = "px-2 py-1 rounded-xl border border-dark-line bg-dark-panel text-dark-muted hover:border-dark-accent";
-  const mkBtn = (label, title, onClick) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = btnClass;
-    b.title = title;
-    b.textContent = label;
-    b.addEventListener("click", onClick);
-    return b;
-  };
+  // filename from date + slug
+  const d = new Date(dateEl.value || Date.now());
+  const yyyy = d.getFullYear(), mm = (`0${d.getMonth()+1}`).slice(-2), dd=(`0${d.getDate()}`).slice(-2);
+  const base = `${yyyy}-${mm}-${dd}-${slugify(title) || "post"}.md`;
+  const path = currentPath || `${POSTS_DIR}/${base}`;
 
-  // Helpers for selection manipulation
-  const wrapSel = (before, after = before) => {
-    bodyEl.focus();
-    const s = bodyEl.selectionStart ?? 0;
-    const e = bodyEl.selectionEnd ?? 0;
-    const val = bodyEl.value;
-    const sel = val.slice(s, e) || "text";
-    const out = val.slice(0, s) + before + sel + after + val.slice(e);
-    bodyEl.value = out;
-    const pos = s + before.length + sel.length + after.length;
-    bodyEl.setSelectionRange(pos, pos);
-    updatePreview();
-  };
-  const insertLink = () => {
-    bodyEl.focus();
-    const s = bodyEl.selectionStart ?? 0;
-    const e = bodyEl.selectionEnd ?? 0;
-    const val = bodyEl.value;
-    const sel = val.slice(s, e) || "link text";
-    const url = prompt("URL for the link:", "https://");
-    if (!url) return;
-    const md = `[${sel}](${url})`;
-    const out = val.slice(0, s) + md + val.slice(e);
-    bodyEl.value = out;
-    const pos = s + md.length;
-    bodyEl.setSelectionRange(pos, pos);
-    updatePreview();
-  };
-  const applySize = (em) => {
-    // Wrap with inline HTML span so kramdown renders it
-    wrapSel(`<span style="font-size:${em}">`, `</span>`);
-  };
-
-  toolbar.appendChild(mkBtn("B", "Bold", () => wrapSel("**", "**")));
-  toolbar.appendChild(mkBtn("I", "Italic", () => wrapSel("*", "*")));
-  toolbar.appendChild(mkBtn("🔗", "Link", insertLink));
-  toolbar.appendChild(mkBtn("HL", "Highlight", () => wrapSel("<mark>", "</mark>")));
-
-  // Size dropdown
-  const sel = document.createElement("select");
-  sel.className = "px-2 py-1 rounded-xl border border-dark-line bg-dark-panel text-dark-muted hover:border-dark-accent";
-  ["Size", "Small", "Normal", "Large", "X-Large"].forEach((opt, i) => {
-    const o = document.createElement("option");
-    o.value = i ? opt.toLowerCase() : "";
-    o.textContent = opt;
-    sel.appendChild(o);
+  const md = buildMarkdown({
+    title,
+    date: d.toISOString(),
+    image: imgPathEl.value.trim() || undefined,
+    body
   });
-  sel.addEventListener("change", () => {
-    if (!sel.value) return;
-    const map = {
-      small: "0.9em",
-      normal: "1.0em",
-      large: "1.25em",
-      "x-large": "1.5em",
-    };
-    applySize(map[sel.value]);
-    sel.value = "";
-  });
-  toolbar.appendChild(sel);
 
-  // Insert toolbar just above the textarea
-  bodyEl.parentElement.insertBefore(toolbar, bodyEl);
-})();
+  const contentB64 = btoa(unescape(encodeURIComponent(md)));
+  const msg = currentPath ? `Update ${path}` : `Create ${path}`;
+  await putFile(path, contentB64, msg, currentSha || null);
 
-// --------- PREVIEW ----------
-function updatePreview() {
-  const title = (titleEl.value || "Untitled").trim();
-  const dateIso = dateEl.value ? new Date(dateEl.value).toISOString() : new Date().toISOString();
-  const img = (imgUrlEl.value || "").trim();
-  let html = `<h1 class="text-2xl font-bold text-white">${title}</h1>`;
-  html += `<p class="text-sm text-dark-muted">${new Date(dateIso).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'})}</p>`;
-  if (img) html += `<img src="${img}" class="mt-4 rounded-xl border border-dark-line max-w-full"/>`;
-  const md = bodyEl.value || "";
-  html += `<div class="mt-3 prose prose-invert max-w-none">${DOMPurify.sanitize(marked.parse(md))}</div>`;
+  currentPath = path;
+  currentSha = null; // will refresh on next load
+  alert("Saved!");
+  listPosts();
+}
+saveBtn.addEventListener("click", savePost);
+
+/* --------- Editor toolbar ---------- */
+function surround(selStart, selEnd, before, after){
+  const el = bodyEl;
+  const v = el.value;
+  const start = el.selectionStart ?? 0;
+  const end   = el.selectionEnd ?? 0;
+  const left = v.slice(0,start), mid = v.slice(start,end) || selStart, right = v.slice(end);
+  const out = `${left}${before}${mid}${after}${right}`;
+  el.value = out;
+  const pos = left.length + before.length + (mid.length===0 ? selStart.length : mid.length);
+  el.setSelectionRange(pos, pos);
+  el.focus(); updatePreview();
+}
+toolbar.addEventListener("click", (e)=>{
+  const b = e.target.closest("button[data-cmd]");
+  if(!b) return;
+  const cmd = b.dataset.cmd;
+  if(cmd==="bold") surround("bold","", "**","**");
+  if(cmd==="italic") surround("em","", "*","*");
+  if(cmd==="highlight") surround("text","", "<mark>","</mark>");
+  if(cmd==="link"){
+    const url = prompt("Link to (https://…):", "https://");
+    if(!url) return;
+    const el = bodyEl;
+    const s = el.value.slice(el.selectionStart, el.selectionEnd) || "link";
+    const left = el.value.slice(0, el.selectionStart);
+    const right= el.value.slice(el.selectionEnd);
+    el.value = `${left}[${s}](${url})${right}`;
+    updatePreview();
+  }
+});
+fontSizeSel.addEventListener("change", ()=>{
+  const v = fontSizeSel.value;
+  const style = v==="small" ? "font-size:.9em"
+              : v==="large" ? "font-size:1.25em"
+              : v==="xlarge"? "font-size:1.5em"
+              : null;
+  if(style) surround("text","", `<span style="${style}">`, `</span>`);
+});
+
+/* --------- Image upload (editor) ---------- */
+imgFileEl.addEventListener("change", async ()=>{
+  const f = imgFileEl.files?.[0];
+  if(!f) return;
+  const cleanName = `${Date.now()}-${slugify(f.name)}`.replace(/[^a-z0-9\.\-]/g,"");
+  const path = `${IMAGES_DIR}/${cleanName}`;
+  const b64 = await fileToBase64(f);
+  await putFile(path, b64, `Upload ${cleanName}`);
+  imgPathEl.value = `/${path}`;
+  updatePreview();
+  loadAssets();
+});
+
+/* --------- Preview ---------- */
+function updatePreview(){
+  const t = titleEl.value.trim();
+  const d = new Date(dateEl.value || Date.now());
+  const img = imgPathEl.value.trim();
+  let html = `<h1 class="text-2xl font-bold text-white">${t || "Untitled"}</h1>`;
+  html += `<p class="text-sm text-dark-muted">${d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'})}</p>`;
+  if(img) html += `<img class="mt-4 rounded-xl border border-dark-line" src="${img}" alt="">`;
+  html += `<div class="mt-4 text-dark-muted leading-relaxed">${md2html(bodyEl.value)}</div>`;
   previewEl.innerHTML = html;
 }
-["input","change"].forEach(evt=>{
-  titleEl.addEventListener(evt, updatePreview);
-  dateEl.addEventListener(evt, updatePreview);
-  imgUrlEl.addEventListener(evt, updatePreview);
-  bodyEl.addEventListener(evt, updatePreview);
-});
-updatePreview();
+titleEl.addEventListener("input", updatePreview);
+dateEl.addEventListener("input", updatePreview);
+imgPathEl.addEventListener("input", updatePreview);
+bodyEl.addEventListener("input", updatePreview);
 
-// --------- IMAGE UPLOAD ----------
-async function maybeUploadImage() {
-  const file = imgFileEl.files?.[0];
-  if (!file) return imgUrlEl.value.trim() || "";
-  const array = new Uint8Array(await file.arrayBuffer());
-  let binary = ""; array.forEach((b) => (binary += String.fromCharCode(b)));
-  const contentB64 = b64(binary);
-
-  const cleanName = file.name.replace(/\s+/g, "-");
-  const path = `${IMAGES_DIR}/${Date.now()}-${cleanName}`;
-  const res = await putContent(path, contentB64, `upload image ${cleanName}`);
-  return `/${IMAGES_DIR}/${res.content.name}`.replace(/\/+/g, "/");
-}
-
-// --------- SAVE / DELETE ----------
-async function savePost(e) {
-  e?.preventDefault?.();
-  const title = titleEl.value.trim();
-  const date = dateEl.value ? new Date(dateEl.value) : new Date();
-  if (!title) return alert("Title required");
-
-  const imagePath = await maybeUploadImage();
-  if (imagePath) imgUrlEl.value = imagePath;
-
-  const data = {
-    title,
-    date: date.toISOString(),
-    image: imgUrlEl.value.trim() || undefined,
-    body: bodyEl.value,
-  };
-  const content = toFrontmatter(data);
-  const contentB64 = b64(content);
-
-  let path = editPathEl.value;
-  let sha = current?.sha;
-
-  if (!path) {
-    const slug = slugify(title);
-    const yyyy = date.getFullYear();
-    const mm = pad2(date.getMonth() + 1);
-    const dd = pad2(date.getDate());
-    path = `${POSTS_DIR}/${yyyy}-${mm}-${dd}-${slug}.md`;
+/* --------- Assets tab ---------- */
+async function loadAssets(){
+  assetsGrid.innerHTML = `<div class="text-sm text-dark-muted">Loading…</div>`;
+  const items = await getDir(IMAGES_DIR).catch(()=>[]);
+  if(!items.length){
+    assetsGrid.innerHTML = `<div class="text-sm text-dark-muted">No images found.</div>`;
+    return;
   }
-
-  const message = current ? `update post: ${title}` : `create post: ${title}`;
-  const res = await putContent(path, contentB64, message, sha);
-  await listPosts();
-  await loadPost(path, res.content.sha, content);
-  alert("Saved!");
-}
-async function deletePostHandler() {
-  if (!current?.path || !current?.sha) return;
-  if (!confirm("Delete this post?")) return;
-  await deleteContent(current.path, `delete post ${current.path}`, current.sha);
-  resetEditor();
-  await listPosts();
-}
-document.getElementById("editor").addEventListener("submit", savePost);
-deleteBtn.addEventListener("click", deletePostHandler);
-
-// --------- SEARCH ----------
-searchEl.addEventListener("input", () => {
-  const q = searchEl.value.toLowerCase();
-  Array.from(postList.children).forEach((li) => {
-    const txt = li.textContent.toLowerCase();
-    li.classList.toggle("hidden", !txt.includes(q));
-  });
-});
-
-// --------- INIT ----------
-(async function init() {
-  if (!token) return; // not logged in yet
-  try {
-    await listPosts();
-  } catch (e) {
-    console.error(e);
-    alert("Failed to load posts. Are you logged into GitHub OAuth?");
+  assetsGrid.innerHTML = "";
+  for(const it of items.filter(i=>i.type==="file")){
+    const url = `/${IMAGES_DIR}/${it.name}`;
+    const cell = document.createElement("div");
+    cell.className="space-y-2";
+    const img = document.createElement("img");
+    img.src = url; img.alt = it.name; img.className="image-tile w-full";
+    const row = document.createElement("div");
+    row.className="flex items-center justify-between text-xs text-dark-muted";
+    const name = document.createElement("span");
+    name.className="truncate max-w-[10rem]";
+    name.textContent = it.name;
+    const add = document.createElement("button");
+    add.className="btn px-2 py-1";
+    add.textContent = "Insert";
+    add.addEventListener("click", ()=>{
+      // insert markdown link or set image field
+      imgPathEl.value = `/${IMAGES_DIR}/${it.name}`;
+      updatePreview();
+      setActiveTab("posts");
+    });
+    row.append(name, add);
+    cell.append(img, row);
+    assetsGrid.appendChild(cell);
   }
-})();
+}
+assetUploadEl.addEventListener("change", async ()=>{
+  const f = assetUploadEl.files?.[0];
+  if(!f) return;
+  const cleanName = `${Date.now()}-${slugify(f.name)}`.replace(/[^a-z0-9\.\-]/g,"");
+  const path = `${IMAGES_DIR}/${cleanName}`;
+  const b64 = await fileToBase64(f);
+  await putFile(path, b64, `Upload ${cleanName}`);
+  await loadAssets();
+  alert("Uploaded.");
+});
+refreshAssetsBtn.addEventListener("click", loadAssets);
+
+/* --------- INIT ---------- */
+async function init(){
+  ensureAuthed();
+  // tabs
+  tabBtns.forEach(b=> b.addEventListener("click", ()=> setActiveTab(b.dataset.tab)));
+  setActiveTab("posts");
+
+  setDateNow();
+  updatePreview();
+
+  await listPosts();
+  await loadAssets();
+}
+init().catch(err=> console.error(err));
