@@ -1,3 +1,4 @@
+// assets/main.js
 (function () {
   const body = document.body;
 
