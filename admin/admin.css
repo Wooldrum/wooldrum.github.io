@@ -1,45 +1,99 @@
 /*
-  Woodrum Admin Theme v3.0 - The Invert Method
-  This is a 'brute force' theme that inverts the default light UI to create a dark mode.
-  It is much more robust against CMS updates than the previous theme.
+  Woodrum Admin Theme v4.0 - The Attribute Selector Method
+  This theme targets stable `data-testid` attributes instead of dynamic class names,
+  making it robust against CMS updates that use CSS-in-JS.
 */
 
 :root {
-  /* Define key colors that we can use for elements we DON'T invert. */
   --bg: #0a1020;
   --panel: #0d152b;
+  --panel-2: #1c2744;
   --line: #22345b;
   --accent: #59a3ff;
   --text: #e7efff;
+  --muted: #9fb2de;
 }
 
-/* Set the body background color. This is OUTSIDE the inverted element. */
+/* === GENERAL OVERRIDES === */
 body {
   background-color: var(--bg) !important;
+  color: var(--text) !important;
 }
 
-/* Invert the entire CMS application root.
-  The hue-rotate keeps colors (like blue) from flipping to their opposite (yellow).
-*/
-#nc-root {
-  filter: invert(1) hue-rotate(180deg);
-  /* We also set the background here to ensure it's uniform under the filter. */
+/* Force backgrounds on the main content panes */
+[data-testid="collection-container-main"],
+[data-testid="editor-pane-main"],
+[data-testid="sidebar"] {
   background-color: var(--bg) !important;
 }
 
-/*
-  Now, we "re-invert" elements that should NOT be inverted, like images,
-  the post preview pane, and video players. Applying the filter twice
-  returns them to their original state.
-*/
-#nc-root img,
-#nc-root video,
-#nc-GITOAUTH-progress-indicator,
-#nc-root [data-testid="preview-pane"] iframe {
-  filter: invert(1) hue-rotate(180deg);
+/* === HEADER / TOOLBAR === */
+[data-testid="header-toolbar"] {
+  background-color: var(--panel) !important;
+  border-bottom: 1px solid var(--line) !important;
 }
 
-/* Custom scrollbar styles */
-*::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
-*::-webkit-scrollbar-track { background: transparent; }
+/* === LIST VIEW (COLLECTION) === */
+
+/* The top card containing "Posts" and the "New Posts" button */
+[data-testid="collection-top"] {
+  background: var(--panel-2) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--text) !important;
+  border-radius: 12px;
+}
+[data-testid="collection-top"] h1 { color: var(--text) !important; }
+[data-testid="collection-top"] button {
+  background-color: var(--accent) !important;
+  color: var(--bg) !important;
+  border-radius: 8px !important;
+}
+
+/* The actual list items for each post */
+[data-testid^="entry-"] { /* `^=` means "starts with" */
+  background: var(--panel-2) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--text) !important;
+  border-radius: 12px !important;
+}
+
+/* === EDITOR VIEW === */
+[data-testid="editor-pane"] { background-color: var(--bg) !important; }
+
+/* The individual widget containers (Title, Date, Body, etc.) */
+[data-testid="editor-pane-main"] > div {
+  background: var(--panel-2) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+/* All inputs, text areas, and buttons inside the editor widgets */
+[data-testid="editor-pane-main"] input,
+[data-testid="editor-pane-main"] textarea,
+[data-testid="editor-pane-main"] .rdw-editor-main {
+  background-color: var(--panel) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--text) !important;
+  border-radius: 8px !important;
+}
+[data-testid="editor-pane-main"] button {
+  background-color: var(--accent) !important;
+  color: var(--bg) !important;
+  border-radius: 8px !important;
+}
+[data-testid="editor-pane-main"] a[role="button"] {
+  border: 1px solid var(--accent) !important;
+  border-radius: 8px !important;
+}
+
+/* Editor publish bar at the top */
+[data-testid="editor-toolbar"] {
+  background-color: var(--panel) !important;
+}
+[data-testid="editor-toolbar"] button {
+  background-color: var(--accent) !important;
+  color: var(--bg) !important;
+  border-radius: 8px !important;
+}
