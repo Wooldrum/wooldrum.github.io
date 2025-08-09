@@ -1,103 +1,107 @@
-/*
-  Woodrum Admin Theme v4.0 - The Attribute Selector Method
-  This theme targets stable `data-testid` attributes instead of dynamic class names,
-  making it robust against CMS updates that use CSS-in-JS.
-*/
+/* ===========
+   Woodrum Admin Theme (Decap CMS)
+   =========== */
 
-:root {
-  --bg: #0a1020;
-  --panel: #0d152b;
-  --panel-2: #1c2744;
-  --line: #22345b;
-  --accent: #59a3ff;
-  --text: #e7efff;
-  --muted: #9fb2de;
-}
+/* Layout surfaces */
+html, body, #app { background: var(--bg) !important; color: var(--text) !important; }
 
-/* === GENERAL OVERRIDES === */
-body {
-  background-color: var(--bg) !important;
+/* App header */
+[class*="AppHeader"], [class*="MuiAppBar-root"], [data-testid="app-header"] {
+  background: var(--panel) !important;
   color: var(--text) !important;
+  border-bottom: 1px solid var(--line) !important;
+  box-shadow: none !important;
 }
 
-#nc-root {
-  background-color: var(--bg) !important;
+/* Side nav / collections list */
+[class*="Sidebar"], [class*="Drawer"], [data-testid="collection-sidebar"] {
+  background: var(--panel) !important;
+  color: var(--text) !important;
+  border-right: 1px solid var(--line) !important;
+}
+[class*="Sidebar"] a, [class*="Sidebar"] span { color: var(--muted) !important; }
+[class*="Sidebar"] [aria-current="true"],
+[class*="Sidebar"] [data-selected="true"] {
+  background: color-mix(in oklab, var(--accent) 18%, transparent) !important;
+  color: var(--text) !important;
+  border-radius: var(--radius);
 }
 
-/* Force backgrounds on the main content panes */
-[data-testid="collection-container-main"],
-[data-testid="editor-pane-main"],
-[data-testid="sidebar"] {
-  background-color: var(--bg) !important;
-}
-
-/* === HEADER / TOOLBAR === */
-[data-testid="header-toolbar"] {
-  background-color: var(--panel) !important;
+/* Collection header bar + “New Post” */
+[class*="CollectionTop"], [data-testid="collection-top"] {
+  background: var(--panel) !important;
+  color: var(--text) !important;
   border-bottom: 1px solid var(--line) !important;
 }
-
-/* === LIST VIEW (COLLECTION) === */
-
-/* The top card containing "Posts" and the "New Posts" button */
-[data-testid="collection-top"] {
-  background: var(--panel-2) !important;
+button, .Button, [role="button"] {
+  background: color-mix(in oklab, var(--accent) 18%, var(--panel)) !important;
+  color: #021018 !important;
   border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
+}
+button:hover { filter: brightness(1.05); }
+
+/* Cards in the list (fix the white boxes) */
+[class*="Card"], [data-testid="entry-card"], [class*="ListCard"] {
+  background: var(--panel) !important;
   color: var(--text) !important;
-  border-radius: 12px;
-}
-[data-testid="collection-top"] h1 { color: var(--text) !important; }
-[data-testid="collection-top"] button {
-  background-color: var(--accent) !important;
-  color: var(--bg) !important;
-  border-radius: 8px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
 }
 
-/* The actual list items for each post */
-[data-testid^="entry-"] { /* `^=` means "starts with" */
-  background: var(--panel-2) !important;
-  border: 1px solid var(--line) !important;
+/* Editor (left pane form) */
+[class*="EditorContainer"], [data-testid="editor"] {
+  background: var(--panel) !important;
   color: var(--text) !important;
-  border-radius: 12px !important;
+  border-right: 1px solid var(--line) !important;
 }
+label, .Label { color: var(--muted) !important; font-weight: 500; }
 
-/* === EDITOR VIEW === */
-[data-testid="editor-pane"] { background-color: var(--bg) !important; }
-
-/* The individual widget containers (Title, Date, Body, etc.) */
-[data-testid="editor-pane-main"] > div {
-  background: var(--panel-2) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 12px !important;
-  margin-bottom: 1rem;
-  padding: 1rem;
-}
-
-/* All inputs, text areas, and buttons inside the editor widgets */
-[data-testid="editor-pane-main"] input,
-[data-testid="editor-pane-main"] textarea,
-[data-testid="editor-pane-main"] .rdw-editor-main {
-  background-color: var(--panel) !important;
-  border: 1px solid var(--line) !important;
+/* Inputs, selects, textareas */
+input, textarea, select,
+[class*="TextField-root"] input,
+[class*="TextField-root"] textarea,
+[class*="MuiInputBase-root"] {
+  background: #0b1430 !important;
   color: var(--text) !important;
-  border-radius: 8px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
 }
-[data-testid="editor-pane-main"] button {
-  background-color: var(--accent) !important;
-  color: var(--bg) !important;
-  border-radius: 8px !important;
-}
-[data-testid="editor-pane-main"] a[role="button"] {
-  border: 1px solid var(--accent) !important;
+input::placeholder, textarea::placeholder { color: color-mix(in oklab, var(--muted) 70%, transparent); }
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent) !important; }
+
+/* Markdown toolbar chips */
+[class*="ToolbarButton"], [class*="EditorToolbar"] button {
+  background: #0b1430 !important;
+  color: var(--muted) !important;
+  border: 1px solid var(--line) !important;
   border-radius: 8px !important;
 }
 
-/* Editor publish bar at the top */
-[data-testid="editor-toolbar"] {
-  background-color: var(--panel) !important;
+/* Preview (right pane) */
+[class*="PreviewPane"], [data-testid="editor-preview"] {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border-left: 1px solid var(--line) !important;
 }
-[data-testid="editor-toolbar"] button {
-  background-color: var(--accent) !important;
-  color: var(--bg) !important;
-  border-radius: 8px !important;
+
+/* Menus / popovers / dialogs */
+[class*="Menu-paper"], [class*="Popover-paper"], [class*="Dialog-paper"],
+.MuiMenu-paper, .MuiPopover-paper, .MuiDialog-paper {
+  background: var(--panel) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
 }
+
+/* Status pills & toasts */
+[class*="Badge--success"], [class*="Toastify__toast--success"] { background: var(--success) !important; color:#001b12 !important; }
+[class*="Badge--error"],   [class*="Toastify__toast--error"]   { background: var(--danger) !important;  color:#2b0000 !important; }
+
+/* Links */
+a { color: var(--accent) !important; }
+
+/* Scrollbars (WebKit) */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; }
+*::-webkit-scrollbar-track { background: var(--panel); }
