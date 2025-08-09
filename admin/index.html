@@ -42,6 +42,9 @@
     .card{background:#0d152b;border:1px solid #22345b;border-radius:1rem}
     .preview a{text-decoration:underline}
     .image-tile{aspect-ratio:1/1;object-fit:cover;border-radius:.75rem;border:1px solid #22345b}
+
+    /* drag & drop highlight */
+    .drop-target.dragover{outline:2px dashed #59a3ff; background:rgba(89,163,255,.06)}
   </style>
 
   <!-- Markdown + sanitize (global) -->
@@ -58,6 +61,7 @@
         <nav class="hidden md:flex items-center gap-4">
           <button class="tab-btn text-dark-muted hover:text-dark-text active" data-tab="posts">Posts</button>
           <button class="tab-btn text-dark-muted hover:text-dark-text" data-tab="assets">Assets</button>
+          <button class="tab-btn text-dark-muted hover:text-dark-text" data-tab="about">About</button>
         </nav>
       </div>
       <div class="flex items-center gap-2">
@@ -73,6 +77,7 @@
     <div class="md:hidden mb-4 flex gap-3">
       <button class="tab-btn active" data-tab="posts">Posts</button>
       <button class="tab-btn" data-tab="assets">Assets</button>
+      <button class="tab-btn" data-tab="about">About</button>
     </div>
 
     <!-- POSTS TAB -->
@@ -119,7 +124,7 @@
           </div>
 
           <label class="block text-sm text-dark-muted mt-4 mb-1">Body (Markdown)</label>
-          <textarea id="body" rows="12" class="textarea w-full p-3" placeholder="Write in Markdown…"></textarea>
+          <textarea id="body" rows="12" class="textarea w-full p-3 drop-target" placeholder="Write in Markdown… (you can also drag & drop images here)"></textarea>
 
           <div class="mt-4 flex gap-2">
             <button id="saveBtn" class="btn-accent hidden">Save</button>
@@ -139,17 +144,44 @@
       <div class="card p-4">
         <h2 class="text-lg font-semibold mb-3">Upload image</h2>
         <input id="assetUpload" type="file" accept="image/*" class="block text-sm text-dark-muted" />
-        <p class="text-xs text-dark-muted mt-2">Uploaded files land in <code>/assets/images/</code>.</p>
+        <p class="text-xs text-dark-muted mt-2">Uploaded files land in <code>/assets/images/</code>. You can also drag & drop into the grid below.</p>
       </div>
       <div class="card p-4">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold">Images</h2>
           <button id="refreshAssets" class="btn">Refresh</button>
         </div>
-        <div id="assetsGrid" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div id="assetsGrid" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 drop-target">
           <div class="text-sm text-dark-muted">Loading…</div>
         </div>
       </div>
+    </section>
+
+    <!-- ABOUT TAB -->
+    <section id="tab-about" class="hidden grid md:grid-cols-2 gap-6">
+      <div class="card p-4">
+        <h2 class="text-lg font-semibold">About content</h2>
+        <p class="text-sm text-dark-muted mb-3">Editing <code>/assets/content/about.md</code>. You can use Markdown and drag & drop images.</p>
+
+        <div class="toolbar flex flex-wrap gap-2">
+          <button data-cmd="about-bold" class="">B</button>
+          <button data-cmd="about-italic"><em>I</em></button>
+          <button data-cmd="about-link">Link</button>
+          <button data-cmd="about-highlight">Highlight</button>
+        </div>
+
+        <textarea id="aboutBody" rows="16" class="textarea w-full p-3 mt-3 drop-target" placeholder="Write your About in Markdown…"></textarea>
+
+        <div class="mt-4 flex gap-2">
+          <button id="saveAboutBtn" class="btn-accent hidden">Save About</button>
+          <button id="resetAboutBtn" class="btn">Reset</button>
+        </div>
+      </div>
+
+      <aside class="card p-4 h-fit">
+        <h2 class="text-lg font-semibold">About Preview</h2>
+        <div id="aboutPreview" class="preview prose prose-invert max-w-none mt-3 text-dark-muted"></div>
+      </aside>
     </section>
   </main>
 
