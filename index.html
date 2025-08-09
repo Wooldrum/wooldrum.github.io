@@ -67,7 +67,7 @@
              class="hidden absolute left-2 top-40 z-50 w-36 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
           <a href="#" class="menu-item text-dark-muted">Placeholder 1</a>
           <a href="#" class="menu-item text-dark-muted">Placeholder 2</a>
-          <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
+          <a href="/admin/login.html" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
         <!-- Buttons (fill boxes) -->
@@ -107,16 +107,19 @@
       <!-- About -->
       <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
         <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
-        <p class="text-dark-muted leading-relaxed max-w-prose">
-          I'm Woodrum. I make things, break things, then write about it. This site is intentionally simple—just HTML, Tailwind, and a dash of JS.
-        </p>
+
+        {% capture about_md %}
+        {% include_relative assets/content/about.md %}
+        {% endcapture %}
+        <div class="prose prose-invert max-w-prose text-dark-muted leading-relaxed">
+          {{ about_md | markdownify }}
+        </div>
       </section>
 
       <!-- Blog -->
       <section id="blog" class="p-6 md:p-10">
         <div class="flex items-center justify-between">
           <h2 class="text-3xl font-bold text-white">Blog</h2>
-          <!-- “Open Editor” button removed -->
         </div>
 
         <div class="mt-8 space-y-8">
