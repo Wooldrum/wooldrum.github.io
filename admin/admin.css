@@ -1,92 +1,187 @@
-/* Dark, modern shell to match your site */
+/* Woodrum Admin Theme — dark, soft, modern
+   Drop this in /admin/admin.css
+*/
+
 :root{
-  --bg: #0a1020;       /* dark-bg   */
-  --panel:#0d152b;     /* dark-panel*/
-  --line:#22345b;      /* dark-line */
-  --text:#e7efff;      /* dark-text */
-  --muted:#9fb2de;     /* dark-muted*/
-  --accent:#59a3ff;    /* dark-accent*/
+  /* Same palette as the site, but slightly softened */
+  --bg:           #0b1225;   /* page background */
+  --panel:        #0e1730;   /* cards / sidebars */
+  --panel-2:      #111c3a;   /* elevated panel */
+  --line:         #22345b;   /* subtle borders */
+  --text:         #e7efff;
+  --muted:        #a5b8e6;
+  --accent:       #59a3ff;
+  --accent-900:   #2e7ad8;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+
+  --shadow-1: 0 8px 24px rgba(4,10,28,.35);
+  --ring: 0 0 0 2px rgba(89,163,255,.35);
 }
 
+* { box-sizing: border-box; }
+html, body { height: 100%; }
 html, body {
-  background: var(--bg);
+  background: radial-gradient(60% 80% at 10% -10%, rgba(89,163,255,.10), transparent 40%),
+              radial-gradient(40% 60% at 110% 10%, rgba(89,163,255,.08), transparent 50%),
+              var(--bg);
   color: var(--text);
   font-family: 'IBM Plex Mono', monospace;
   color-scheme: dark;
 }
 
-/* App chrome */
-#nc-root, .nc-app, .ReactVirtualized__Grid, .css-1xyh0xw {
-  background: var(--bg) !important;
+/* Root app containers */
+#nc-root, .nc-app, [data-testid="app"], [data-testid="root"] {
+  background: transparent !important;
   color: var(--text) !important;
 }
 
-/* Header bar */
-[class*="AppHeader"] , [data-testid="header"] {
+/* Header */
+[class*="AppHeader"], [data-testid="header"] {
+  background: linear-gradient(180deg, var(--panel-2), var(--panel)) !important;
+  border-bottom: 1px solid var(--line) !important;
+  backdrop-filter: saturate(140%) blur(6px);
+  box-shadow: var(--shadow-1);
+}
+
+/* Sidebar / Collections */
+[class*="Sidebar"], [data-testid="sidebar"], [class*="CollectionContainer"] {
   background: var(--panel) !important;
-  border-bottom: 2px solid var(--line) !important;
+  border-right: 1px solid var(--line) !important;
+}
+[class*="SearchInput"] input {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Entry list cards */
+[class*="EntryCard"], [class*="Entries"] article, [data-testid="entry-card"] {
+  background: var(--panel) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
   box-shadow: none !important;
 }
-
-/* Collections sidebar + cards */
-[class*="CollectionTop"], [class*="SidebarContainer"], [class*="CollectionContainer"] {
-  background: var(--panel) !important;
-  border-right: 2px solid var(--line) !important;
-}
-[class*="EntryCard"], [class*="Entries"] article {
-  background: var(--panel) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 12px !important;
+[class*="EntryCard"]:hover {
+  border-color: var(--accent) !important;
 }
 
-/* Forms */
-input, textarea, select {
-  background: var(--bg) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 10px !important;
-  box-shadow: none !important;
+/* Editor scaffolding (center + preview panes) */
+[class*="Editor"], [data-testid="editor"] {
+  background: transparent !important;
 }
-input::placeholder, textarea::placeholder { color: var(--muted) !important; }
-
-/* Labels and subtle text */
-label, small, .hint, .description, [class*="Subtle"] { color: var(--muted) !important; }
-
-/* Buttons */
-button, [role="button"], .Button, .nc-button {
-  background: var(--accent) !important;
-  color: #000 !important;
-  border: 0 !important;
-  border-radius: 10px !important;
-}
-button:hover, [role="button"]:hover { filter: brightness(1.05); }
-
-/* Secondary/ghost buttons */
-[class*="secondary"], [class*="ghost"], .nc-btn-default, .nc-btn {
-  background: var(--panel) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--line) !important;
-}
-
-/* Editor frame / right pane wrapper */
-[class*="EditorContainer"], [class*="Editor"], [data-testid="editor"] {
+[class*="EditorPane"], [data-testid="editor-pane"] {
   background: var(--bg) !important;
 }
-
-/* Preview pane container (the right side area outside the iframe) */
 [class*="PreviewPane"], [data-testid="preview-pane"] {
   background: var(--panel) !important;
-  border-left: 2px solid var(--line) !important;
+  border-left: 1px solid var(--line) !important;
+}
+
+/* Form fields */
+input, textarea, select {
+  background: #0b1631 !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm) !important;
+  outline: none !important;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+input::placeholder, textarea::placeholder { color: var(--muted) !important; }
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: var(--ring) !important;
+}
+
+/* Rich text / CodeMirror dark */
+[class*="RichTextEditor"], .CodeMirror, .cm-s-default {
+  background: #0b1631 !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm) !important;
+}
+.CodeMirror-gutters { background: #0b1631 !important; border-right: 1px solid var(--line) !important; }
+.CodeMirror-cursor  { border-left: 2px solid var(--accent) !important; }
+.CodeMirror-selected{ background: rgba(89,163,255,.25) !important; }
+
+/* Labels / help text */
+label, small, .hint, .description, [class*="Subtle"], [data-testid="field-hint"] {
+  color: var(--muted) !important;
+}
+
+/* Buttons (primary + secondary + icon) */
+button, [role="button"], .Button, .nc-button, .nc-btn, .MuiButton-root {
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+/* Primary action */
+button[class*="primary"], .Button--primary, .MuiButton-containedPrimary,
+.nc-button-primary, .nc-btn-primary {
+  background: linear-gradient(180deg, var(--accent), var(--accent-900)) !important;
+  color: #000 !important;
+  border-color: transparent !important;
+}
+button[class*="primary"]:hover,
+.Button--primary:hover, .MuiButton-containedPrimary:hover,
+.nc-button-primary:hover, .nc-btn-primary:hover { filter: brightness(1.05); }
+
+/* Secondary / ghost */
+button[class*="secondary"], .Button--secondary, .nc-btn-default,
+.MuiButton-outlined, .MuiButton-text {
+  background: var(--panel) !important;
+  color: var(--text) !important;
+  border-color: var(--line) !important;
+}
+button[class*="secondary"]:hover,
+.Button--secondary:hover, .MuiButton-outlined:hover,
+.MuiButton-text:hover { border-color: var(--accent) !important; }
+
+/* Icon-only buttons & toggles */
+[class*="IconButton"], .MuiIconButton-root {
+  color: var(--muted) !important;
+  background: transparent !important;
+}
+[class*="IconButton"]:hover, .MuiIconButton-root:hover {
+  color: var(--text) !important;
+  background: rgba(255,255,255,.04) !important;
+  border-radius: 10px !important;
+}
+
+/* Dropdowns / menus / popovers */
+[class*="Menu"], [role="menu"], .MuiPaper-root {
+  background: var(--panel-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-1) !important;
+}
+
+/* Toasts / alerts */
+[class*="Snackbar"], [role="alert"] {
+  background: var(--panel-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
 }
 
 /* Links */
-a { color: var(--accent); }
+a { color: var(--accent) !important; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* Scrollbars (WebKit) */
+/* Scrollbars (webkit) */
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
 *::-webkit-scrollbar-track { background: transparent; }
 
-/* Make the top bar compact & modern */
+/* Compact header text */
 [class*="AppHeader"] * { font-size: 14px !important; }
+
+/* Media library */
+[data-testid="media-library"], [class*="MediaLibrary"]{
+  background: var(--panel) !important;
+}
