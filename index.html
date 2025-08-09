@@ -13,7 +13,7 @@
     tailwind.config = {
       theme: {
         extend: {
-          spacing: { '44': '11rem' },  /* avatar tile height */
+          spacing: { '44': '11rem' },  /* avatar tile height baseline */
           colors: {
             'dark-bg':     '#0a1020',
             'dark-panel':  '#0d152b',
@@ -33,29 +33,45 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
   <style>
-    :root { --pfp-h: 176px; } /* fallback = 11rem */
+    :root { --pfp-h: 176px; } /* synced at runtime to match the avatar tile */
 
     body { font-family: 'IBM Plex Mono', monospace; }
     html, body { overflow: visible; }
     body.blog-mode #about { display: none; }
 
-    /* sidebar tiles */
-    .tile       { height: 4rem; }
-    .tile-clip  { position: relative; height: 4rem; border-radius: 0.75rem; overflow: hidden; }
-    .tile-img   { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* Sidebar tiles */
+    .tile-btn{
+      position: relative;
+      height: 4rem;
+      border-radius: .75rem;
+      overflow: hidden;            /* clip image edges perfectly */
+      display: block;
+    }
+    .tile-img{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;           /* always fills */
+      display: block;
+    }
+    .tile-label{
+      height: 4rem;
+      display:flex; align-items:center; justify-content:center;
+    }
 
-    /* avatar tile (strict square) */
-    .pfp-wrap { width: 100%; height: 11rem; padding: 0.75rem; }
-    .pfp-img  { width: 100%; height: 100%; object-fit: cover; border-radius: 0.75rem; display:block; }
+    /* Avatar tile (strict 1:1 square) */
+    .pfp-wrap { width: 100%; height: 11rem; padding: .75rem; }
+    .pfp-img  { width: 100%; height: 100%; object-fit: cover; border-radius: .75rem; display:block; }
 
-    /* header height is driven by the avatar height so the bottom borders line up */
+    /* Header height is locked to avatar tile so bottom borders line up exactly */
     #pageHeader { height: var(--pfp-h); }
 
-    /* simple link hover */
+    /* Little utility for dropdown items */
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
     .menu-item:hover { background:#0a1020; }
 
-    /* detail page typography kept for consistency */
+    /* Post page typography kept here so style stays consistent site-wide */
     .post-body { max-width: 70ch; }
     .post-body p { color: #9fb2de; margin: .9rem 0; }
     .post-body h1, .post-body h2, .post-body h3 { color: #ffffff; margin: 1.25rem 0 .5rem; }
@@ -78,48 +94,42 @@
     <aside class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
         <!-- PFP (square; click opens menu) -->
-        <div class="pfp-wrap border-b-2 border-dark-line flex-shrink-0">
-          <button id="pfpToggle" class="block w-full h-full rounded-tile outline-none focus:ring-2 focus:ring-dark-accent">
+        <div id="pfpBox" class="pfp-wrap border-b-2 border-dark-line flex-shrink-0">
+          <button id="pfpToggle"
+                  class="block w-full h-full rounded-tile outline-none focus:ring-2 focus:ring-dark-accent cursor-pointer">
             <img src="/assets/images/channels4_profile.jpg"
                  alt="Profile picture"
                  class="pfp-img border-2 border-dark-line hover:border-dark-accent transition-colors">
           </button>
         </div>
 
-        <!-- Dropdown -->
+        <!-- Dropdown (absolute to sidebar container; very high z-index) -->
         <div id="pfpMenu"
-             class="hidden absolute left-2 top-40 z-50 w-40 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
+             class="hidden absolute left-2 z-[200] w-44 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg"
+             style="top: calc(var(--pfp-h) - .75rem);">
           <a href="https://youtube.com/@Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
           <a href="https://discord.gg/WmZ5DVt5N2" target="_blank" rel="noopener" class="menu-item text-dark-muted">Discord</a>
           <a href="https://github.com/Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">GitHub</a>
           <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
-        <!-- Tiles -->
+        <!-- Tiles (Cool stuff is a non-clickable label; the rest are image buttons) -->
         <nav class="flex flex-row md:flex-col w-full">
-          <!-- label (hidden on mobile by JS) -->
-          <div class="tile w-full flex items-center justify-center border-b-2 border-dark-line">
-            <a href="#blog" class="text-lg font-semibold">Cool stuff</a>
+          <div class="tile-label w-full border-b-2 border-dark-line">
+            <span class="text-lg font-semibold">Cool stuff</span>
           </div>
 
-          <!-- Zen -->
           <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
-             class="tile w-full flex items-center justify-center border-b-2 border-dark-line px-2">
-            <span class="tile-clip w-full">
-              <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="tile-img">
-            </span>
+             class="tile-btn w-full border-b-2 border-dark-line">
+            <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="tile-img">
           </a>
 
-          <!-- Windows -->
           <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
-             class="tile w-full flex items-center justify-center border-b-2 border-dark-line px-2">
-            <span class="tile-clip w-full">
-              <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="tile-img">
-            </span>
+             class="tile-btn w-full border-b-2 border-dark-line">
+            <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="tile-img">
           </a>
 
-          <!-- Placeholder -->
-          <a href="#" class="tile w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
+          <a href="#" class="tile-label w-full border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
             <span class="text-xl">Button 4</span>
           </a>
         </nav>
@@ -137,7 +147,9 @@
       <!-- About (from assets/content/about.md) -->
       <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
         <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
-        <div id="aboutContent" class="text-dark-muted leading-relaxed max-w-prose">
+        <div id="aboutContent"
+             data-src="{{ '/assets/content/about.md' | relative_url }}"
+             class="text-dark-muted leading-relaxed max-w-prose">
           <p class="opacity-60">Loading…</p>
         </div>
       </section>
