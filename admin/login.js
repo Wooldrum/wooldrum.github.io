@@ -1,8 +1,6 @@
-// admin/login.js — OAuth "middleman"
+// OAuth middleman
 const OAUTH_HOST = "https://wooldrum-decap-oauth.vercel.app";
 const SITE_ID = "wooldrum.github.io";
-
-// Where to go after login; honor ?next= if present.
 const next = new URLSearchParams(location.search).get("next") || "/admin/index.html";
 
 const loginBtn = document.getElementById("loginBtn");
@@ -15,12 +13,10 @@ function storeAndGo(t) {
   location.replace(next);
 }
 
-// Handle return from OAuth (#token=...)
 if (location.hash.startsWith("#token=")) {
   storeAndGo(location.hash.slice(7));
 }
 
-// If token already present, show Continue + Logout
 const existing = sessionStorage.getItem("gh_token");
 if (existing) {
   alreadyBox.classList.remove("hidden");
