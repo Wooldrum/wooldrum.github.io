@@ -1,5 +1,5 @@
-/* Woodrum Admin Theme v2.1 — fix white background + keep soft dark UI
-   Save as /admin/admin.css and hard refresh (/admin) */
+/* Woodrum Admin Theme v2.2 — near-zero white anywhere
+   Save as /admin/admin.css, then hard refresh (/admin) */
 
 :root{
   --bg:         #0b1225;
@@ -20,10 +20,10 @@
 
 * { box-sizing: border-box; }
 
-/* FORCE the dark background everywhere (fixes the “all white” page) */
+/* 1) Force the global backdrop to dark */
 html, body,
 #root, #nc-root, .nc-app,
-[data-testid="root"], [data-testid="app"] {
+[data-testid="root"], [data-testid="app"]{
   min-height: 100vh !important;
   background:
     radial-gradient(60% 80% at 10% -10%, rgba(89,163,255,.08), transparent 40%),
@@ -34,145 +34,148 @@ html, body,
   color-scheme: dark;
 }
 
-/* Some builds wrap inside extra containers; make them dark too */
-.MuiContainer-root, .MuiPaper-root, .MuiDrawer-paper, .MuiAppBar-colorPrimary,
-[data-testid="main-content"], [data-testid="content"], [class*="MainContent"] {
-  background: var(--bg) !important;
+/* 2) Any “paper/card/drawer/menu/popover” must be dark */
+.MuiPaper-root, .MuiCard-root, .MuiPopover-paper, .MuiDrawer-paper,
+.MuiMenu-paper, .MuiAppBar-colorPrimary,
+[data-testid="main-content"], [data-testid="content"], [class*="MainContent"]{
+  background: var(--panel-2) !important;
   color: var(--text) !important;
+  border-color: var(--line) !important;
 }
 
-/* Header */
-[class*="AppHeader"], [data-testid="header"] {
+/* 3) Header */
+[class*="AppHeader"], [data-testid="header"]{
   background: linear-gradient(180deg, var(--panel-2), var(--panel)) !important;
   border-bottom: 1px solid var(--line) !important;
-  backdrop-filter: saturate(140%) blur(6px);
   box-shadow: var(--shadow-1);
 }
-[class*="AppHeader"] * { font-size: 14px !important; }
+[class*="AppHeader"] *{ font-size:14px !important; }
 
-/* Sidebar / Collections */
-[class*="Sidebar"], [data-testid="sidebar"], [class*="CollectionContainer"] {
+/* 4) Sidebar / collections */
+[class*="Sidebar"], [data-testid="sidebar"], [class*="CollectionContainer"]{
   background: var(--panel) !important;
   border-right: 1px solid var(--line) !important;
 }
-[class*="SearchInput"] input {
+[class*="SearchInput"] input{
   background: var(--bg) !important;
   color: var(--text) !important;
   border: 1px solid var(--line) !important;
   border-radius: var(--radius-sm) !important;
 }
 
-/* Entry list cards */
-[class*="EntryCard"], [class*="Entries"] article, [data-testid="entry-card"] {
+/* 5) Entry list cards */
+[class*="EntryCard"], [data-testid="entry-card"]{
   background: var(--panel) !important;
   border: 1px solid var(--line) !important;
   border-radius: var(--radius) !important;
 }
-[class*="EntryCard"]:hover { border-color: var(--accent) !important; }
+[class*="EntryCard"]:hover{ border-color: var(--accent) !important; }
 
-/* Editor / Preview */
-[class*="Editor"], [data-testid="editor"] { background: var(--bg) !important; }
-[class*="EditorPane"], [data-testid="editor-pane"] { background: var(--bg) !important; }
-[class*="PreviewPane"], [data-testid="preview-pane"] {
+/* 6) Editor layout */
+[class*="Editor"], [data-testid="editor"]{ background: var(--bg) !important; }
+[class*="EditorPane"], [data-testid="editor-pane"]{ background: var(--bg) !important; }
+[class*="PreviewPane"], [data-testid="preview-pane"]{
   background: var(--panel) !important;
   border-left: 1px solid var(--line) !important;
 }
-[class*="Resizer"] { background: var(--line) !important; opacity: .35 !important; }
+[class*="Resizer"]{ background: var(--line) !important; opacity:.35 !important; }
 
-/* Fields */
-input, textarea, select {
+/* 7) Inputs / selects / textareas (stronger specificity) */
+input, textarea, select,
+.MuiInputBase-root, .MuiInputBase-input, .MuiOutlinedInput-root,
+.MuiSelect-outlined, .MuiFormControl-root, .MuiInput-root input{
   background: #0b1631 !important;
   color: var(--text) !important;
-  border: 1px solid var(--line) !important;
+  border-color: var(--line) !important;
   border-radius: var(--radius-sm) !important;
-  outline: none !important;
-  transition: border-color .15s, box-shadow .15s;
 }
-input::placeholder, textarea::placeholder { color: var(--muted) !important; }
-input:focus, textarea:focus, select:focus {
+input::placeholder, textarea::placeholder{ color: var(--muted) !important; }
+input:focus, textarea:focus, select:focus,
+.Mui-focused .MuiOutlinedInput-notchedOutline{
   border-color: var(--accent) !important;
   box-shadow: var(--ring) !important;
 }
-label, small, .hint, .description, [class*="Subtle"], [data-testid="field-hint"] {
-  color: var(--muted) !important;
-}
 
-/* Editors */
-[class*="RichTextEditor"], .CodeMirror, .cm-s-default {
+/* 8) Markdown & Rich Text editors */
+textarea, .nc-textarea{ background:#0b1631 !important; color:var(--text) !important; }
+[class*="RichTextEditor"]{
   background: #0b1631 !important;
-  color: var(--text) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--line) !important; border-radius: var(--radius-sm) !important;
 }
-.CodeMirror-gutters { background: #0b1631 !important; border-right: 1px solid var(--line) !important; }
-.CodeMirror-cursor  { border-left: 2px solid var(--accent) !important; }
+.rdw-editor-main{ background:#0b1631 !important; color:var(--text) !important; }
+.rdw-editor-toolbar{
+  background: var(--panel-2) !important;
+  border: 1px solid var(--line) !important; border-radius: var(--radius-sm) !important;
+}
+.rdw-option-wrapper{
+  background: transparent !important; color: var(--muted) !important; border: 1px solid transparent !important;
+}
+.rdw-option-wrapper:hover{ background: rgba(255,255,255,.06) !important; color: var(--text) !important; }
+
+/* CodeMirror (if enabled) */
+.CodeMirror, .cm-s-default{
+  background:#0b1631 !important; color:var(--text) !important;
+  border:1px solid var(--line) !important; border-radius:var(--radius-sm) !important;
+}
+.CodeMirror-gutters{ background:#0b1631 !important; border-right:1px solid var(--line) !important; }
+.CodeMirror-cursor{ border-left:2px solid var(--accent) !important; }
 .CodeMirror-selected{ background: rgba(89,163,255,.25) !important; }
 
-/* Toolbar + chips */
-[class*="Toolbar"], [data-testid="toolbar"] {
+/* 9) Toolbars, chips, toggles */
+[class*="Toolbar"], [data-testid="toolbar"]{
   background: var(--panel-2) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--line) !important; border-radius: var(--radius-sm) !important;
 }
-[class*="Toolbar"] button { background: transparent !important; color: var(--muted) !important; border-radius: 10px !important; }
-[class*="Toolbar"] button:hover { background: rgba(255,255,255,.06) !important; color: var(--text) !important; }
-.MuiChip-root {
+[class*="Toolbar"] button{ background: transparent !important; color: var(--muted) !important; border-radius:10px !important; }
+[class*="Toolbar"] button:hover{ background: rgba(255,255,255,.06) !important; color: var(--text) !important; }
+
+.MuiChip-root{
   background: var(--panel-2) !important; color: var(--text) !important;
   border: 1px solid var(--line) !important; border-radius: 999px !important;
 }
-.MuiChip-root:hover { border-color: var(--accent) !important; }
+.MuiChip-icon, .MuiChip-deleteIcon{ color: var(--muted) !important; }
 
-/* Buttons */
-button, [role="button"], .Button, .nc-button, .nc-btn, .MuiButton-root {
+.MuiSwitch-track{ background-color: var(--line) !important; }
+.MuiSwitch-thumb{ background-color: var(--accent) !important; }
+.Mui-checked + .MuiSwitch-track{ background-color: rgba(89,163,255,.4) !important; }
+
+/* 10) Menus / dropdowns / popovers */
+.MuiMenuItem-root{ color: var(--text) !important; }
+.MuiMenuItem-root:hover{ background: rgba(255,255,255,.06) !important; }
+
+/* 11) Buttons */
+button, [role="button"], .Button, .nc-button, .nc-btn, .MuiButton-root{
   border-radius: var(--radius-sm) !important; border: 1px solid transparent !important;
   box-shadow: none !important; font-weight: 600 !important;
 }
 .MuiButton-containedPrimary,
-button[class*="primary"], .Button--primary, .nc-button-primary, .nc-btn-primary {
+button[class*="primary"], .Button--primary, .nc-button-primary, .nc-btn-primary{
   background: linear-gradient(180deg, var(--accent), var(--accent-900)) !important;
   color: #000 !important;
 }
-.MuiButton-outlined, .Button--secondary, .nc-btn-default {
+.MuiButton-outlined, .Button--secondary, .nc-btn-default{
   background: var(--panel) !important; color: var(--text) !important; border-color: var(--line) !important;
 }
 
-/* Menus / popovers / dropdowns */
-.MuiPaper-root, [role="menu"], [class*="Menu"] {
-  background: var(--panel-2) !important; color: var(--text) !important;
-  border: 1px solid var(--line) !important; border-radius: var(--radius) !important;
-  box-shadow: var(--shadow-1) !important;
-}
-.MuiMenuItem-root { color: var(--text) !important; }
-.MuiMenuItem-root:hover { background: rgba(255,255,255,.06) !important; }
-
-/* Selects */
-.MuiOutlinedInput-root, .MuiSelect-outlined {
-  background: #0b1631 !important; color: var(--text) !important;
-  border-color: var(--line) !important; border-radius: var(--radius-sm) !important;
-}
-.MuiOutlinedInput-notchedOutline { border-color: var(--line) !important; }
-.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: var(--accent) !important; }
-
-/* Tabs */
-.MuiTabs-root { border-bottom: 1px solid var(--line) !important; }
-.MuiTab-root  { color: var(--muted) !important; }
-.Mui-selected { color: var(--text) !important; }
-
-/* Toasts / alerts + backdrop */
-[role="alert"], [class*="Snackbar"] {
+/* 12) Toasts / overlays */
+[role="alert"], [class*="Snackbar"]{
   background: var(--panel-2) !important; color: var(--text) !important;
   border: 1px solid var(--line) !important; border-radius: var(--radius) !important;
 }
-.MuiBackdrop-root { background-color: rgba(3,10,24,.7) !important; }
+.MuiBackdrop-root{ background-color: rgba(3,10,24,.7) !important; }
 
-/* Media library */
-[data-testid="media-library"], [class*="MediaLibrary"] { background: var(--panel) !important; }
+/* 13) Media library */
+[data-testid="media-library"], [class*="MediaLibrary"]{ background: var(--panel) !important; }
 
-/* Links */
-a { color: var(--accent) !important; text-decoration: none; }
-a:hover { text-decoration: underline; }
+/* 14) Links + scrollbars */
+a{ color: var(--accent) !important; text-decoration: none; }
+a:hover{ text-decoration: underline; }
+*::-webkit-scrollbar{ width:10px; height:10px; }
+*::-webkit-scrollbar-thumb{ background: var(--line); border-radius: 999px; }
+*::-webkit-scrollbar-track{ background: transparent; }
 
-/* Scrollbars */
-*::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
-*::-webkit-scrollbar-track { background: transparent; }
+/* 15) Safety net: if something still sets pure white inline, darken it */
+*[style*="background: rgb(255, 255, 255)"],
+*[style*="background-color: rgb(255, 255, 255)"]{
+  background-color: #0b1631 !important; color: var(--text) !important;
+}
