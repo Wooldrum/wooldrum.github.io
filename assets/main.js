@@ -1,8 +1,8 @@
+// assets/main.js
 (function () {
   const body = document.body;
-  const pfpToggle = document.getElementById('pfpToggle');
-  const pfpMenu = document.getElementById('pfpMenu');
 
+  // --- Routing between About and Blog (unchanged on desktop, works on mobile too)
   function enterBlog() {
     body.classList.add('blog-mode');
     if (location.hash !== '#blog') history.pushState({ view: 'blog' }, '', '#blog');
@@ -17,7 +17,6 @@
     else body.classList.remove('blog-mode');
   }
 
-  // Hash nav buttons
   document.querySelectorAll('[data-nav="blog"]').forEach(el => {
     el.addEventListener('click', (e) => { e.preventDefault(); enterBlog(); });
   });
@@ -25,19 +24,31 @@
     el.addEventListener('click', (e) => { e.preventDefault(); enterAbout(); });
   });
 
-  // PFP dropdown
-  function closeMenu() { pfpMenu?.classList.add('hidden'); }
-  pfpToggle?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    pfpMenu?.classList.toggle('hidden');
-  });
-  document.addEventListener('click', (e) => {
-    if (!pfpMenu || pfpMenu.classList.contains('hidden')) return;
-    if (!pfpMenu.contains(e.target) && e.target !== pfpToggle) closeMenu();
-  });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
-
   window.addEventListener('hashchange', setModeFromHash);
   window.addEventListener('popstate', setModeFromHash);
-  setModeFromHash(); // init on load
+  setModeFromHash();
+
+  // --- Dropdowns: supports multiple avatar buttons (desktop + mobile)
+  function wireMenus() {
+    const toggles = document.querySelectorAll('.pfpToggle');
+    function closeAll() {
+      document.querySelectorAll('#pfpMenuDesktop, #pfpMenuMobile').forEach(m => m.classList.add('hidden'));
+    }
+    toggles.forEach(btn => {
+      const menuSel = btn.getAttribute('data-menu');
+      const menu = document.querySelector(menuSel);
+      if (!menu) return;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = !menu.classList.contains('hidden');
+        closeAll();
+        if (!isOpen) menu.classList.remove('hidden');
+      });
+    });
+
+    // Click-away + Escape to close
+    document.addEventListener('click', closeAll);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
+  }
+  wireMenus();
 })();
