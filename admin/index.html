@@ -15,7 +15,7 @@
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
-  <script>
+<script>
     // Ensure preview uses our site typography/colors
     CMS.registerPreviewStyle('/admin/preview.css?v=2');
 
@@ -34,8 +34,9 @@
         color: #e7efff !important;
       }
 
-      /* And a highly specific override to kill the white boxes in the post list */
-      #root [data-testid="collection-container"] .MuiPaper-root {
+      /* FINAL FIX: Directly target the List Item components to kill the white background */
+      [data-testid="collection-container"] .MuiListItem-root,
+      [data-testid="collection-container"] .MuiListItemButton-root {
         background-color: #1c2744 !important;
       }
     `;
