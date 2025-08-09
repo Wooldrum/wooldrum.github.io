@@ -7,103 +7,120 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Woodrum's Page</title>
 
-  <!-- Tailwind + font -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          spacing: { '44': '11rem', '50': '12.5rem' }, /* convenience sizes */
+          spacing: { '44': '11rem' }, /* used by avatar tile */
           colors: {
-            'dark-bg': '#0a1020',
-            'dark-panel': '#0d152b',
-            'dark-line': '#22345b',
-            'dark-text': '#e7efff',
-            'dark-muted': '#9fb2de',
+            'dark-bg':     '#0a1020',
+            'dark-panel':  '#0d152b',
+            'dark-line':   '#22345b',
+            'dark-text':   '#e7efff',
+            'dark-muted':  '#9fb2de',
             'dark-accent': '#59a3ff',
-          }
+          },
+          borderRadius: { 'tile': '0.75rem' }
         }
       }
     }
   </script>
 
+  <!-- Markdown + sanitize for About -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
   <style>
     body { font-family: 'IBM Plex Mono', monospace; }
-    /* Blog-only view */
-    body.blog-mode #about { display: none; }
-    /* allow sticky elements to work */
     html, body { overflow: visible; }
 
-    /* keep borders crisp, and make sure rail + main share the same box model */
-    .box-border-all { box-sizing: border-box; }
+    /* hide About in “blog-only” view */
+    body.blog-mode #about { display: none; }
 
-    /* dropdown */
+    /* sidebar tiles */
+    .tile { height: 4rem; }                 /* each button row */
+    .tile-img-wrap { height: 4rem; overflow: hidden; border-radius: 0.75rem; }
+    .tile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* pfp tile (square, fills box) */
+    .pfp-wrap { width: 100%; height: 11rem; padding: 0.75rem; }
+    .pfp-img  { width: 100%; height: 100%; object-fit: cover; border-radius: 0.75rem; }
+
+    /* menu (desktop) */
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
     .menu-item:hover { background:#0a1020; }
 
-    /* simple post body styling */
-    .prose :where(a){ text-decoration: underline; }
+    /* post body typography on detail pages (kept for consistency) */
+    .post-body { max-width: 70ch; }
+    .post-body p { color: #9fb2de; margin: .9rem 0; }
+    .post-body h1, .post-body h2, .post-body h3 { color: #ffffff; margin: 1.25rem 0 .5rem; }
+    .post-body a { color: #59a3ff; text-decoration: underline; }
+    .post-body img { max-width: 100%; border: 1px solid #22345b; border-radius: 12px; margin: 1rem 0; }
+    .post-body blockquote {
+      margin: 1rem 0; padding: .75rem 1rem;
+      border-left: 3px solid #59a3ff; background: #0d152b; color: #9fb2de; border-radius: 10px;
+    }
+    .post-body code { background: #0d152b; border: 1px solid #22345b; padding: .15rem .35rem; border-radius: 8px; }
+    .post-body pre { background: #0d152b; border: 1px solid #22345b; color: #e7efff; padding: 1rem; border-radius: 12px; overflow: auto; }
+
+    /* mobile tweaks come from main.js (class toggles) */
   </style>
 
-  <!-- our small behavior script (pfp dropdown + about/blog toggle) -->
   <script defer src="/assets/main.js"></script>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
 
-  <div class="flex flex-col md:flex-row min-h-screen box-border-all">
-    <!-- LEFT RAIL (desktop only) -->
-    <aside class="hidden md:block md:w-48 box-border-all bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
-      <div class="flex flex-col relative">
-
-        <!-- PFP tile (true 1:1 square inside the rail, with even padding) -->
-        <div class="h-48 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center px-3 pt-3">
-          <button id="pfpToggle" class="block rounded-2xl outline-none focus:ring-2 focus:ring-dark-accent w-full">
+  <div class="flex flex-col md:flex-row min-h-screen">
+    <!-- LEFT RAIL -->
+    <aside class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
+      <div class="flex flex-row md:flex-col relative">
+        <!-- PFP (square 1:1; click opens menu) -->
+        <div class="pfp-wrap border-b-2 border-dark-line flex-shrink-0">
+          <button id="pfpToggle" class="block w-full h-full rounded-tile outline-none focus:ring-2 focus:ring-dark-accent">
             <img
               src="/assets/images/channels4_profile.jpg"
               alt="Profile picture"
-              class="w-full aspect-square rounded-2xl object-cover border-2 border-dark-line hover:border-dark-accent transition-colors"
+              class="pfp-img border-2 border-dark-line hover:border-dark-accent transition-colors"
             >
           </button>
         </div>
 
         <!-- Dropdown (desktop) -->
         <div id="pfpMenu"
-             class="hidden absolute left-2 top-44 z-50 w-40 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
-          <a href="https://youtube.com/@wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
+             class="hidden absolute left-2 top-40 z-50 w-40 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
+          <a href="https://youtube.com/@Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
           <a href="https://discord.gg/WmZ5DVt5N2" target="_blank" rel="noopener" class="menu-item text-dark-muted">Discord</a>
           <a href="https://github.com/Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">GitHub</a>
           <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
         <!-- Buttons -->
-        <nav class="flex flex-col w-full">
-          <!-- Cool stuff (desktop name only) -->
-          <a href="#blog" data-nav="blog" title="Cool stuff"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors text-lg font-semibold">
-            <span>Cool stuff</span>
-          </a>
+        <nav class="flex flex-row md:flex-col w-full">
+          <!-- Cool stuff (just the label tile on desktop; hidden on mobile by JS) -->
+          <div class="tile w-full flex items-center justify-center border-b-2 border-dark-line">
+            <a href="#blog" data-nav="blog" class="text-lg font-semibold">Cool stuff</a>
+          </div>
 
-          <!-- Zen Browser tile -->
+          <!-- Zen (image fills box) -->
           <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="/assets/images/zen-browser.png"
-                 alt="Zen Browser Button" class="w-full h-full object-cover rounded block">
+             class="tile w-full flex items-center justify-center border-b-2 border-dark-line px-2">
+            <span class="tile-img-wrap w-full">
+              <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="tile-img">
+            </span>
           </a>
 
-          <!-- Windows tile (links to Windows 11) -->
+          <!-- Windows (fills box) -->
           <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" title="Windows 11"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="/assets/images/Windows_2021_print.png"
-                 alt="Windows 11" class="w-full h-full object-cover rounded block">
+             class="tile w-full flex items-center justify-center border-b-2 border-dark-line px-2">
+            <span class="tile-img-wrap w-full">
+              <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="tile-img">
+            </span>
           </a>
 
-          <!-- you can keep Button 4 or replace later -->
-          <a href="#" title="Button 4"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
+          <!-- Placeholder 4 -->
+          <a href="#" class="tile w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
             <span class="text-xl">Button 4</span>
           </a>
         </nav>
@@ -111,65 +128,24 @@
     </aside>
 
     <!-- MAIN -->
-    <main class="flex-1 box-border-all">
-      <!-- MOBILE TOP BAR (no sidebar on mobile) -->
-      <div class="md:hidden border-b-2 border-dark-line px-4 py-3 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <button id="pfpToggleMobile" class="rounded-xl outline-none focus:ring-2 focus:ring-dark-accent">
-            <img src="/assets/images/channels4_profile.jpg" alt="Profile picture"
-                 class="w-12 h-12 rounded-xl object-cover border-2 border-dark-line">
-          </button>
-          <div>
-            <h1 class="text-2xl font-bold text-white leading-tight">Woodrum's Page</h1>
-            <p class="text-sm text-dark-muted leading-tight">Welcome to my personal corner of the internet.</p>
-          </div>
-        </div>
-
-        <!-- (Optional) quick Admin link on mobile via kebab menu could go here -->
-      </div>
-
-      <!-- Cool stuff ICON ROW (mobile only) -->
-      <div class="md:hidden border-b-2 border-dark-line px-4 py-3 flex items-center gap-4">
-        <!-- Zen -->
-        <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" class="shrink-0">
-          <img src="/assets/images/zen-browser.png" alt="Zen" class="w-9 h-9 rounded object-cover border border-dark-line">
-        </a>
-        <!-- Windows -->
-        <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" class="shrink-0">
-          <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="w-9 h-9 rounded object-cover border border-dark-line">
-        </a>
-        <!-- YouTube -->
-        <a href="https://youtube.com/@wooldrum" target="_blank" rel="noopener" class="shrink-0" aria-label="YouTube">
-          <svg viewBox="0 0 24 24" class="w-7 h-7 fill-current text-dark-accent"><path d="M23.5 6.2a4.7 4.7 0 0 0-3.3-3.3C18.2 2.2 12 2.2 12 2.2s-6.2 0-8.2.7A4.7 4.7 0 0 0 .5 6.2 49 49 0 0 0 0 12a49 49 0 0 0 .5 5.8 4.7 4.7 0 0 0 3.3 3.3c2 .7 8.2.7 8.2.7s6.2 0 8.2-.7a4.7 4.7 0 0 0 3.3-3.3A49 49 0 0 0 24 12a49 49 0 0 0-.5-5.8ZM9.7 15.5v-7l6.3 3.5-6.3 3.5Z"/></svg>
-        </a>
-        <!-- Discord -->
-        <a href="https://discord.gg/WmZ5DVt5N2" target="_blank" rel="noopener" class="shrink-0" aria-label="Discord">
-          <svg viewBox="0 0 24 24" class="w-7 h-7 fill-current text-dark-accent"><path d="M20.3 4.4A18 18 0 0 0 15.9 3l-.5 1.1c-1-.2-2-.3-3-.3s-2 .1-3 .3L8.9 3A18 18 0 0 0 4.5 4.4C2.8 7.1 2.3 9.8 2.4 12.4a18 18 0 0 0 5.5 2.7l1.3-1.9c-.7-.2-1.4-.6-2-.9.5.3 1 .5 1.5.7 1 .4 2 .7 3.2.7 1.1 0 2.2-.2 3.2-.6.5-.2 1-.4 1.5-.7-.7.4-1.4.7-2 .9l1.3 1.9a18 18 0 0 0 5.5-2.7c.2-2.6-.2-5.3-1.9-8ZM9.4 12.9c-.8 0-1.5-.8-1.5-1.8s.7-1.8 1.5-1.8 1.5.8 1.5 1.8-.7 1.8-1.5 1.8Zm5.2 0c-.8 0-1.5-.8-1.5-1.8s.7-1.8 1.5-1.8 1.5.8 1.5 1.8-.7 1.8-1.5 1.8Z"/></svg>
-        </a>
-        <!-- GitHub -->
-        <a href="https://github.com/Wooldrum" target="_blank" rel="noopener" class="shrink-0" aria-label="GitHub">
-          <svg viewBox="0 0 24 24" class="w-7 h-7 fill-current text-dark-accent"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-3 .7-3.7-1.4-3.7-1.4-.5-1.2-1.2-1.6-1.2-1.6-1-.7.1-.7.1-.7 1 .1 1.5 1 1.5 1 .9 1.5 2.4 1.1 3 .9.1-.7.4-1.1.7-1.4-2.4-.3-5-1.2-5-5.5 0-1.2.4-2.1 1-2.9-.1-.2-.4-1.3.1-2.8 0 0 .9-.3 3 1.1.9-.3 1.9-.4 2.9-.4s2 .1 2.9.4c2.1-1.4 3-1.1 3-1.1.5 1.5.2 2.6.1 2.8.6.8 1 1.8 1 2.9 0 4.3-2.6 5.2-5 5.5.4.3.8 1 .8 2v3c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></svg>
-        </a>
-      </div>
-
-      <!-- Desktop header -->
-      <header class="hidden md:flex items-center h-44 px-6 md:px-8 border-b-2 border-dark-line">
-        <div>
-          <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
-          <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
-        </div>
+    <main class="flex-1">
+      <!-- Header (height auto-sync’d to avatar tile by JS to align the horizontal line) -->
+      <header id="pageHeader" class="px-6 md:px-10 border-b-2 border-dark-line flex flex-col justify-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
+        <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
       </header>
 
-      <!-- About -->
-      <section id="about" class="p-6 md:p-8 border-b-2 border-dark-line">
+      <!-- About (content comes from assets/content/about.md) -->
+      <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
         <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
-        <p class="text-dark-muted leading-relaxed max-w-prose">
-          I'm Woodrum. I make things, break things, then write about it. This site is intentionally simple—just HTML, Tailwind, and a dash of JS.
-        </p>
+        <div id="aboutContent" class="text-dark-muted leading-relaxed max-w-prose">
+          <!-- filled by JS from assets/content/about.md -->
+          <p class="opacity-60">Loading…</p>
+        </div>
       </section>
 
       <!-- Blog -->
-      <section id="blog" class="p-6 md:p-8">
+      <section id="blog" class="p-6 md:p-10">
         <div class="flex items-center justify-between">
           <h2 class="text-3xl font-bold text-white">My Blog</h2>
         </div>
@@ -203,5 +179,6 @@
       </section>
     </main>
   </div>
+
 </body>
 </html>
