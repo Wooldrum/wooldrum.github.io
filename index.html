@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Tailwind config -->
   <script>
     tailwind.config = {
       theme: {
@@ -33,9 +34,13 @@
 
   <style>
     body { font-family: 'IBM Plex Mono', monospace; }
+    /* Blog-only view */
     body.blog-mode #about { display: none; }
+    /* allow sticky elements to work */
     html, body { overflow: visible; }
-    .prose :where(a){text-decoration:underline}
+    .prose :where(a){ text-decoration: underline; }
+    .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
+    .menu-item:hover { background:#0a1020; }
   </style>
 
   <script defer src="/assets/main.js"></script>
@@ -45,17 +50,27 @@
   <div class="flex flex-col md:flex-row min-h-screen">
     <!-- LEFT RAIL -->
     <aside class="w-full md:w-40 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
-      <div class="flex flex-row md:flex-col">
+      <div class="flex flex-row md:flex-col relative">
+        <!-- PFP (click for dropdown) -->
         <div class="h-44 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
-          <a href="#about" class="block" title="About Me" data-nav="about">
+          <button id="pfpToggle" class="block rounded-full outline-none focus:ring-2 focus:ring-dark-accent">
             <img
               src="/assets/images/channels4_profile.jpg"
               alt="Profile picture"
               class="h-24 w-24 rounded-full object-fill border-2 border-dark-line hover:border-dark-accent transition-colors sticky top-2"
             >
-          </a>
+          </button>
         </div>
 
+        <!-- Dropdown -->
+        <div id="pfpMenu"
+             class="hidden absolute left-2 top-40 z-50 w-36 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
+          <a href="#" class="menu-item text-dark-muted">Placeholder 1</a>
+          <a href="#" class="menu-item text-dark-muted">Placeholder 2</a>
+          <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
+        </div>
+
+        <!-- Buttons (fill boxes) -->
         <nav class="flex flex-row md:flex-col w-full">
           <a href="#blog" data-nav="blog" title="Blog"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
@@ -81,13 +96,15 @@
       </div>
     </aside>
 
-    <!-- MAIN test -->
+    <!-- MAIN -->
     <main class="flex-1">
+      <!-- Header -->
       <header class="h-44 px-6 md:px-10 border-b-2 border-dark-line flex flex-col justify-center">
         <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
         <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
       </header>
 
+      <!-- About -->
       <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
         <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
         <p class="text-dark-muted leading-relaxed max-w-prose">
@@ -95,19 +112,18 @@
         </p>
       </section>
 
+      <!-- Blog -->
       <section id="blog" class="p-6 md:p-10">
         <div class="flex items-center justify-between">
           <h2 class="text-3xl font-bold text-white">Blog</h2>
-          <a href="/admin/" class="px-3 py-1 rounded bg-dark-accent text-black font-semibold hover:opacity-90">
-            Open Editor
-          </a>
+          <!-- “Open Editor” button removed -->
         </div>
 
         <div class="mt-8 space-y-8">
           {% if site.posts == empty %}
             <article class="border-t border-dark-line pt-6">
               <h3 class="text-2xl font-semibold text-dark-accent">Hello!</h3>
-              <p class="text-sm text-dark-muted mt-1">No posts yet. Click “Open Editor” to publish your first one.</p>
+              <p class="text-sm text-dark-muted mt-1">No posts yet.</p>
             </article>
           {% else %}
             {% for post in site.posts %}
