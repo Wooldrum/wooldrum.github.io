@@ -1,27 +1,18 @@
 (function () {
   const body = document.body;
 
-  // --- NAV hash -> show Blog/About
+  // --- Modes by hash (kept)
   function setModeFromHash() {
     if (location.hash === '#blog') {
       body.classList.add('blog-mode');
-    } else if (location.hash === '#about') {
-      body.classList.remove('blog-mode');
     } else {
-      body.classList.remove('blog-mode'); // default
+      body.classList.remove('blog-mode');
     }
   }
-  document.querySelectorAll('[data-nav="blog"]').forEach(el => {
-    el.addEventListener('click', (e) => {
-      // keep default anchor behavior, but ensure mode
-      body.classList.add('blog-mode');
-    });
-  });
   window.addEventListener('hashchange', setModeFromHash);
-  window.addEventListener('popstate', setModeFromHash);
   setModeFromHash();
 
-  // --- PFP dropdown (desktop)
+  // --- PFP dropdown
   const pfpToggle = document.getElementById('pfpToggle');
   const pfpMenu   = document.getElementById('pfpMenu');
   if (pfpToggle && pfpMenu) {
@@ -37,53 +28,45 @@
     });
   }
 
-  // --- Align the header’s bottom border with the bottom of the avatar tile (account for borders)
+  // --- EXACT header alignment with avatar tile (including borders)
   function syncHeaderHeight() {
     const header = document.getElementById('pageHeader');
     const pfpBox = document.querySelector('.pfp-wrap');
     if (!header || !pfpBox) return;
 
-    // offsetHeight includes borders. We want the header to exactly match that height.
-    header.style.height = `${pfpBox.offsetHeight}px`;
+    // Use bounding rect for “painted” size (padding + border).
+    const h = Math.round(pfpBox.getBoundingClientRect().height);
+    document.documentElement.style.setProperty('--pfp-h', `${h}px`);
   }
   window.addEventListener('load', syncHeaderHeight);
   window.addEventListener('resize', syncHeaderHeight);
 
-  // --- Load About content from assets/content/about.md
+  // --- About content (relative path = GH Pages safe)
   async function loadAbout() {
-    const host = location.host.toLowerCase();
-    const isGhPages = host.endsWith('github.io');
-    const url = isGhPages
-      ? '/assets/content/about.md'
-      : `${location.origin}/assets/content/about.md`; // fallback
-
+    const out = document.getElementById('aboutContent');
+    if (!out) return;
     try {
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch('assets/content/about.md', { cache: 'no-store' });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       const md = await res.text();
-      const html = DOMPurify.sanitize(marked.parse(md));
-      const out = document.getElementById('aboutContent');
-      if (out) out.innerHTML = html;
+      out.innerHTML = DOMPurify.sanitize(marked.parse(md));
     } catch (err) {
-      const out = document.getElementById('aboutContent');
-      if (out) out.innerHTML = `<p class="text-red-300">Failed to load About content.</p>`;
+      out.innerHTML = `<p class="text-red-300">Failed to load About content.</p>`;
       console.error('about.md load failed:', err);
     }
   }
   loadAbout();
 
-  // --- Mobile: hide the “Cool stuff” label tile and keep image tiles
-  function applyMobileTweaks() {
-    const labelTile = document.querySelector('nav .tile:first-child'); // the "Cool stuff" tile
+  // --- Mobile: hide the "Cool stuff" label tile
+  function mobileCoolStuff() {
+    const labelTile = document.querySelector('nav .tile:first-child');
     if (!labelTile) return;
-
     if (window.matchMedia('(max-width: 767px)').matches) {
-      // on mobile, hide the label tile entirely
       labelTile.classList.add('hidden');
     } else {
       labelTile.classList.remove('hidden');
     }
   }
-  window.addEventListener('load', applyMobileTweaks);
-  window.addEventListener('resize', applyMobileTweaks);
+  window.addEventListener('load', mobileCoolStuff);
+  window.addEventListener('resize', mobileCoolStuff);
 })();
