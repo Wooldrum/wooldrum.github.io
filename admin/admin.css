@@ -1,0 +1,92 @@
+/* Dark, modern shell to match your site */
+:root{
+  --bg: #0a1020;       /* dark-bg   */
+  --panel:#0d152b;     /* dark-panel*/
+  --line:#22345b;      /* dark-line */
+  --text:#e7efff;      /* dark-text */
+  --muted:#9fb2de;     /* dark-muted*/
+  --accent:#59a3ff;    /* dark-accent*/
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  color-scheme: dark;
+}
+
+/* App chrome */
+#nc-root, .nc-app, .ReactVirtualized__Grid, .css-1xyh0xw {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+/* Header bar */
+[class*="AppHeader"] , [data-testid="header"] {
+  background: var(--panel) !important;
+  border-bottom: 2px solid var(--line) !important;
+  box-shadow: none !important;
+}
+
+/* Collections sidebar + cards */
+[class*="CollectionTop"], [class*="SidebarContainer"], [class*="CollectionContainer"] {
+  background: var(--panel) !important;
+  border-right: 2px solid var(--line) !important;
+}
+[class*="EntryCard"], [class*="Entries"] article {
+  background: var(--panel) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+}
+
+/* Forms */
+input, textarea, select {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+input::placeholder, textarea::placeholder { color: var(--muted) !important; }
+
+/* Labels and subtle text */
+label, small, .hint, .description, [class*="Subtle"] { color: var(--muted) !important; }
+
+/* Buttons */
+button, [role="button"], .Button, .nc-button {
+  background: var(--accent) !important;
+  color: #000 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+}
+button:hover, [role="button"]:hover { filter: brightness(1.05); }
+
+/* Secondary/ghost buttons */
+[class*="secondary"], [class*="ghost"], .nc-btn-default, .nc-btn {
+  background: var(--panel) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+}
+
+/* Editor frame / right pane wrapper */
+[class*="EditorContainer"], [class*="Editor"], [data-testid="editor"] {
+  background: var(--bg) !important;
+}
+
+/* Preview pane container (the right side area outside the iframe) */
+[class*="PreviewPane"], [data-testid="preview-pane"] {
+  background: var(--panel) !important;
+  border-left: 2px solid var(--line) !important;
+}
+
+/* Links */
+a { color: var(--accent); }
+a:hover { text-decoration: underline; }
+
+/* Scrollbars (WebKit) */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* Make the top bar compact & modern */
+[class*="AppHeader"] * { font-size: 14px !important; }
