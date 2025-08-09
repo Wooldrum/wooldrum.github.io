@@ -34,9 +34,7 @@
 
   <style>
     body { font-family: 'IBM Plex Mono', monospace; }
-    /* Blog-only view */
     body.blog-mode #about { display: none; }
-    /* allow sticky elements to work */
     html, body { overflow: visible; }
     .prose :where(a){ text-decoration: underline; }
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
@@ -77,11 +75,22 @@
             <img src="https://placehold.co/88x31/22345b/9fb2de?text=Blog"
                  alt="Blog Button" class="w-full h-full object-fill rounded block">
           </a>
+
           <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
             <img src="/assets/images/zen-browser.png"
                  alt="Zen Browser Button" class="w-full h-full object-fill rounded block">
           </a>
+
+          <!-- NEW: Windows 11 tile (clickable image) -->
+          <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" title="Windows 11"
+             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
+            <!-- Re-upload the file so it preserves the .png (see admin.js fix). Use this exact path/name: -->
+            <img src="/assets/images/Windows_2021_print.png"
+                 alt="Windows 2021 Print"
+                 class="w-full h-full object-fill rounded block">
+          </a>
+
           <a href="#" title="Button 3"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
             <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+3"
@@ -98,13 +107,11 @@
 
     <!-- MAIN -->
     <main class="flex-1">
-      <!-- Header -->
       <header class="h-44 px-6 md:px-10 border-b-2 border-dark-line flex flex-col justify-center">
         <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
         <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
       </header>
 
-      <!-- About -->
       <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
         <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
 
@@ -116,7 +123,6 @@
         </div>
       </section>
 
-      <!-- Blog -->
       <section id="blog" class="p-6 md:p-10">
         <div class="flex items-center justify-between">
           <h2 class="text-3xl font-bold text-white">Blog</h2>
