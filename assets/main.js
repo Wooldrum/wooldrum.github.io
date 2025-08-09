@@ -1,4 +1,4 @@
-// main.js for front page
+// main.js for front page — hardened About loader + UI glue
 (function () {
   const $ = (sel) => document.querySelector(sel);
 
@@ -27,7 +27,6 @@
     const p = $("#leftRail .pfpH");
     const h = $("header.pfpH");
     if (p && h) {
-      // share whatever real pixel height the PFP tile ended up with
       const px = Math.round(p.getBoundingClientRect().height);
       document.documentElement.style.setProperty("--pfpH", px + "px");
     }
@@ -35,26 +34,47 @@
   window.addEventListener("load", syncHeights);
   window.addEventListener("resize", syncHeights);
 
-  // 3) ABOUT loader: fetch markdown and render
+  // 3) ABOUT loader: fetch markdown and render robustly
   async function loadAbout() {
     const box = $("#aboutBody");
     if (!box) return;
+
     try {
-      const bust = "{{ site.time | date: '%s' }}";
-      const res = await fetch(`/assets/content/about.md?ts=${bust}`);
-      if (!res.ok) throw new Error(`${res.status}`);
+      // Bust caches without Liquid, so Jekyll doesn't have to touch this file
+      const url = `/assets/content/about.md?ts=${Date.now()}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const md = await res.text();
-      // marked is global from CDN
-      const html = DOMPurify.sanitize(marked.parse(md));
+
+      // Check for libs; render gracefully even if they’re not ready
+      const hasMarked  = typeof window.marked === "object" && typeof window.marked.parse === "function";
+      const hasPurify  = typeof window.DOMPurify === "object" && typeof window.DOMPurify.sanitize === "function";
+
+      let html;
+      if (hasMarked) {
+        html = window.marked.parse(md);
+      } else {
+        // Minimal fallback: preserve line breaks
+        html = md.replace(/&/g,"&amp;")
+                 .replace(/</g,"&lt;")
+                 .replace(/>/g,"&gt;")
+                 .replace(/\n/g,"<br>");
+      }
+
+      if (hasPurify) {
+        html = window.DOMPurify.sanitize(html);
+      }
+
       box.innerHTML = html;
     } catch (err) {
-      box.textContent = "Failed to load About.";
       console.error("About load error:", err);
+      box.textContent = "Failed to load About.";
     }
   }
-  loadAbout();
+  // Delay a tick so CDN scripts have a moment to attach globals on first paint
+  window.addEventListener("DOMContentLoaded", () => setTimeout(loadAbout, 0));
 
-  // 4) Optional: blog-only view via hash (kept from original)
+  // 4) Optional: blog-only view via hash (kept from earlier)
   const blogLink = document.querySelector('[data-nav="blog"]');
   if (blogLink) {
     blogLink.addEventListener("click", (e) => {
