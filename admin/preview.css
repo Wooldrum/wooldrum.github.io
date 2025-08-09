@@ -1,7 +1,6 @@
-/* Injected into the preview iframe so the post preview matches the site */
-
+/* Preview pane typography to match the blog */
 :root{
-  --bg: #0a1020;
+  --bg:#0a1020;
   --panel:#0d152b;
   --line:#22345b;
   --text:#e7efff;
@@ -9,25 +8,27 @@
   --accent:#59a3ff;
 }
 
-html, body { margin:0; padding:32px; background: var(--bg); color: var(--text);
-  font-family: 'IBM Plex Mono', monospace; }
-
-/* Prose defaults */
-.prose { max-width: 72ch; line-height: 1.65; }
-.prose h1,.prose h2,.prose h3 { color:#fff; margin:1.2em 0 .45em; }
-.prose p  { color:var(--muted); margin:.85em 0; }
-.prose a  { color:var(--accent); text-decoration: underline; }
-.prose img{ max-width:100%; border:1px solid var(--line); border-radius:12px; }
-.prose blockquote{
-  margin:1.1em 0; padding:.85em 1em;
-  border-left: 3px solid var(--accent);
-  background: var(--panel);
-  color: var(--muted); border-radius: 10px;
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-.prose code{ background:var(--panel); border:1px solid var(--line);
-  padding:.15em .35em; border-radius:8px; }
-.prose pre{ background:var(--panel); border:1px solid var(--line);
-  color:var(--text); padding:1em; border-radius:12px; overflow:auto; }
-
-#preview-root { display:block; }
-#preview-root > * { margin: 0 auto; }
+a { color: var(--accent); text-decoration: underline; }
+h1,h2,h3{ color:#fff; margin:0 0 .6rem; line-height:1.15 }
+h1{ font-size:2rem; }
+h2{ font-size:1.5rem; }
+h3{ font-size:1.2rem; }
+p,li{ color:var(--muted); line-height:1.7 }
+img{ border-radius:12px; border:1px solid var(--line); max-width:100%; }
+blockquote{
+  margin: 1rem 0; padding: .8rem 1rem;
+  border-left: 4px solid var(--accent);
+  background: #0b1430;
+  color: var(--muted);
+  border-radius: 8px;
+}
+pre, code{
+  background: #0b1430; color: #cde5ff;
+  border:1px solid var(--line); border-radius:8px;
+}
+pre{ padding: .8rem; overflow:auto }
