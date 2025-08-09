@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ page.title }} — Woodrum's Page</title>
 
+  <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -23,17 +24,30 @@
       }
     }
   </script>
+
   <style>
     body { font-family: 'IBM Plex Mono', monospace; }
     html, body { overflow: visible; }
-    .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
-    .menu-item:hover { background:#0a1020; }
-    .prose :where(a){ text-decoration: underline; }
+
+    /* Minimal, explicit typography – NO dependency on Tailwind Typography */
+    .post-body { max-width: 70ch; }
+    .post-body p { color: #9fb2de; margin: .9rem 0; }
+    .post-body h1, .post-body h2, .post-body h3 { color: #ffffff; margin: 1.25rem 0 .5rem; }
+    .post-body a { color: #59a3ff; text-decoration: underline; }
+    .post-body img { max-width: 100%; border: 1px solid #22345b; border-radius: 12px; margin: 1rem 0; }
+    .post-body blockquote {
+      margin: 1rem 0; padding: .75rem 1rem;
+      border-left: 3px solid #59a3ff; background: #0d152b; color: #9fb2de; border-radius: 10px;
+    }
+    .post-body code { background: #0d152b; border: 1px solid #22345b; padding: .15rem .35rem; border-radius: 8px; }
+    .post-body pre { background: #0d152b; border: 1px solid #22345b; color: #e7efff; padding: 1rem; border-radius: 12px; overflow: auto; }
   </style>
+
   <script defer src="/assets/main.js"></script>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
   <div class="flex flex-col md:flex-row min-h-screen">
+    <!-- LEFT RAIL -->
     <aside class="w-full md:w-40 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
         <div class="h-44 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
@@ -43,31 +57,41 @@
                  class="h-24 w-24 rounded-full object-fill border-2 border-dark-line hover:border-dark-accent transition-colors sticky top-2">
           </button>
         </div>
+
+        <!-- Dropdown -->
         <div id="pfpMenu"
              class="hidden absolute left-2 top-40 z-50 w-36 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
-          <a href="#" class="menu-item text-dark-muted">Placeholder 1</a>
-          <a href="#" class="menu-item text-dark-muted">Placeholder 2</a>
-          <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
+          <a href="#" class="block px-3 py-2 text-dark-muted rounded hover:bg-dark-bg">Placeholder 1</a>
+          <a href="#" class="block px-3 py-2 text-dark-muted rounded hover:bg-dark-bg">Placeholder 2</a>
+          <a href="/admin/" class="block px-3 py-2 text-dark-accent font-semibold rounded hover:bg-dark-bg">Admin</a>
         </div>
+
         <nav class="flex flex-row md:flex-col w-full">
           <a href="{{ '/' | relative_url }}#blog" data-nav="blog" title="Blog"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Blog" alt="Blog Button" class="w-full h-full object-fill rounded block">
+            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Blog"
+                 alt="Blog Button" class="w-full h-full object-fill rounded block">
           </a>
           <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="/assets/images/zen-browser.png" alt="Zen Browser Button" class="w-full h-full object-fill rounded block">
+            <img src="/assets/images/zen-browser.png"
+                 alt="Zen Browser Button" class="w-full h-full object-fill rounded block">
           </a>
-          <a href="#" class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+3" alt="" class="w-full h-full object-fill rounded block">
+          <a href="#" title="Button 3"
+             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
+            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+3"
+                 alt="88x31 Button" class="w-full h-full object-fill rounded block">
           </a>
-          <a href="#" class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+4" alt="" class="w-full h-full object-fill rounded block">
+          <a href="#" title="Button 4"
+             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
+            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+4"
+                 alt="88x31 Button" class="w-full h-full object-fill rounded block">
           </a>
         </nav>
       </div>
     </aside>
 
+    <!-- POST CONTENT -->
     <main class="flex-1">
       <header class="h-44 px-6 md:px-10 border-b-2 border-dark-line flex items-center">
         <div>
@@ -77,11 +101,12 @@
         </div>
       </header>
 
-      <article class="p-6 md:p-10 text-dark-muted leading-relaxed max-w-3xl">
+      <article class="p-6 md:p-10 leading-relaxed">
         {% if page.image %}
           <img src="{{ page.image | relative_url }}" alt="" class="mt-2 mb-6 rounded border border-dark-line" />
         {% endif %}
-        <div class="prose prose-invert max-w-none">
+        <!-- The important part: render the Markdown body with explicit styling -->
+        <div class="post-body">
           {{ content }}
         </div>
       </article>
