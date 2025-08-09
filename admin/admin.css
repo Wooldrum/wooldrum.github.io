@@ -20,6 +20,10 @@ body {
   color: var(--text) !important;
 }
 
+#nc-root {
+  background-color: var(--bg) !important;
+}
+
 /* Force backgrounds on the main content panes */
 [data-testid="collection-container-main"],
 [data-testid="editor-pane-main"],
