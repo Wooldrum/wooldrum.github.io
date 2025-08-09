@@ -54,13 +54,13 @@ const headers = () => ({
   "Content-Type": "application/json",
 });
 const pad = (n) => String(n).padStart(2, "0");
-const slugify = (s) =>
+const slugifyBase = (s) =>
   String(s || "")
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
+    .replace(/[^a-z0-9._-]/g, "-")   // keep dot/underscore/dash for base processing
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
+
 const localDateTimeValue = (d = new Date()) =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
@@ -169,12 +169,20 @@ async function putFile(path, contentB64, message, sha = null) {
 }
 
 // Posts
+function slugFromTitle(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
 async function listPosts() {
   postsList.innerHTML = `<li class="text-sm text-dark-muted">Loading…</li>`;
   const items = await getDir(POSTS_DIR);
   const files = items
     .filter((i) => i.type === "file" && /\.md$/i.test(i.name))
-    .sort((a, b) => b.name.localeCompare(a.name)); // newest by filename
+    .sort((a, b) => b.name.localeCompare(a.name));
   if (!files.length) {
     postsList.innerHTML = `<li class="text-sm text-dark-muted">No posts yet.</li>`;
     return;
@@ -230,7 +238,7 @@ async function savePost() {
 
   const d = new Date(dateEl.value || Date.now());
   const yyyy = d.getFullYear(), mm = pad(d.getMonth() + 1), dd = pad(d.getDate());
-  const base = `${yyyy}-${mm}-${dd}-${slugify(title) || "post"}.md`;
+  const base = `${yyyy}-${mm}-${dd}-${slugFromTitle(title) || "post"}.md`;
   const path = currentPath || `${POSTS_DIR}/${base}`;
 
   const content = buildFrontmatter({
@@ -309,8 +317,23 @@ function makeDropTarget(el, onFiles) {
     await onFiles(files);
   });
 }
+
+// === FIXED: Preserve extension correctly ===
+function splitNameAndExt(name) {
+  const i = name.lastIndexOf(".");
+  if (i <= 0 || i === name.length - 1) return { base: name, ext: "" };
+  return { base: name.slice(0, i), ext: name.slice(i + 1) };
+}
+function makeCleanFilename(original) {
+  const { base, ext } = splitNameAndExt(original);
+  // sanitize base but keep dashes/underscores
+  const cleanBase = slugifyBase(base).replace(/[^a-z0-9_-]/g, "-").replace(/-+/g, "-");
+  const cleanExt = (ext || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const stamp = Date.now();
+  return cleanExt ? `${stamp}-${cleanBase}.${cleanExt}` : `${stamp}-${cleanBase}`;
+}
 async function uploadImageFile(file) {
-  const clean = `${Date.now()}-${slugify(file.name)}`.replace(/[^a-z0-9.\-]/g, "");
+  const clean = makeCleanFilename(file.name);
   const path = `${IMAGES_DIR}/${clean}`;
   const buf = await file.arrayBuffer();
   const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
