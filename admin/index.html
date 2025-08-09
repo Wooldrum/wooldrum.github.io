@@ -1,117 +1,409 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin — Woodrum</title>
-  <meta name="color-scheme" content="dark" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { mono: ['IBM Plex Mono','ui-monospace','SFMono-Regular','Menlo','Consolas','monospace'] },
-          colors: {
-            'dark-bg':'#0a1020',
-            'dark-panel':'#0d152b',
-            'dark-line':'#22345b',
-            'dark-text':'#e7efff',
-            'dark-muted':'#9fb2de',
-            'dark-accent':'#59a3ff',
-          },
-          borderRadius: { xl: '14px' }
-        }
-      }
+// admin/admin.js — custom admin with Posts + Assets
+
+// --------- CONFIG ----------
+const OWNER = "Wooldrum";
+const REPO = "wooldrum.github.io";
+const BRANCH = "main";
+const POSTS_DIR = "_posts";
+const IMAGES_DIR = "assets/images";
+
+const OAUTH_HOST = "https://wooldrum-decap-oauth.vercel.app";
+const RETURN_TO = "https://wooldrum.github.io/admin/index.html";
+
+// --------- DYNAMIC LIBS (Markdown preview) ----------
+const { marked } = await import("https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js");
+const DOMPurifyMod = await import("https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js");
+const DOMPurify = DOMPurifyMod.default || window.DOMPurify;
+
+// --------- STATE ----------
+let token = null;
+let current = null; // { path, sha, frontmatter, body }
+
+// --------- ELEMENTS ----------
+const el = (id) => document.getElementById(id);
+
+// Tabs / Views
+const postsTabBtn = el("postsTabBtn");
+const assetsTabBtn = el("assetsTabBtn");
+const postsView = el("postsView");
+const assetsView = el("assetsView");
+
+// Header buttons
+const loginBtn = el("loginBtn");
+const logoutBtn = el("logoutBtn");
+const newPostBtn = el("newPostBtn");
+
+// Posts UI
+const postList = el("postList");
+const searchEl = el("search");
+const titleEl = el("title");
+const dateEl = el("date");
+const imgFileEl = el("imageFile");
+const imgUrlEl = el("imageUrl");
+const bodyEl = el("body");
+const editPathEl = el("editPath");
+const previewEl = el("preview");
+const deleteBtn = el("deleteBtn");
+
+// Assets UI
+const assetFileEl = el("assetFile");
+const uploadAssetBtn = el("uploadAssetBtn");
+const assetGrid = el("assetGrid");
+
+// --------- UTIL ----------
+const b64 = (str) => btoa(unescape(encodeURIComponent(str)));
+const unb64 = (str) => decodeURIComponent(escape(atob(str)));
+const pad2 = (n) => String(n).padStart(2, "0");
+const fmtDate = (d) => {
+  const x = new Date(d);
+  const yyyy = x.getFullYear();
+  const mm = pad2(x.getMonth() + 1);
+  const dd = pad2(x.getDate());
+  const hh = pad2(x.getHours());
+  const mi = pad2(x.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+};
+const slugify = (s) =>
+  s.toLowerCase().trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+const toFrontmatter = (data) => {
+  const lines = [
+    "---",
+    `layout: post`,
+    `author: Woodrum`,
+    `title: "${(data.title || "").replace(/"/g, '\\"')}"`,
+    `date: ${new Date(data.date).toISOString()}`,
+  ];
+  if (data.image) lines.push(`image: ${data.image}`);
+  lines.push("---", "", data.body || "");
+  return lines.join("\n");
+};
+const parseFrontmatter = (raw) => {
+  const m = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!m) return { fm: {}, body: raw };
+  const fm = {};
+  m[1].split("\n").forEach((line) => {
+    const i = line.indexOf(":");
+    if (i > -1) {
+      const key = line.slice(0, i).trim();
+      const value = line.slice(i + 1).trim().replace(/^"|"$/g, "");
+      fm[key] = value;
     }
-  </script>
-  <style>
-    html,body{height:100%} body{background:#0a1020;color:#e7efff;font-family:'IBM Plex Mono',monospace}
-    .input, .select, .textarea{
-      background:#0b1430; color:#e7efff; border:1px solid #22345b; border-radius:12px; outline:none;
-    }
-    .input:focus,.select:focus,.textarea:focus{ box-shadow:0 0 0 2px #59a3ff44; border-color:#59a3ff }
-    .btn{
-      background:#59a3ff; color:#001019; font-weight:700; border-radius:12px; border:1px solid #22345b;
-    }
-    .btn:hover{ filter:brightness(1.08) }
-    .card{ background:#0d152b; border:1px solid #22345b; border-radius:14px }
-    .ghost{ background:#0b1430 }
-  </style>
-</head>
-<body>
-  <!-- Top bar -->
-  <header class="sticky top-0 z-20 border-b border-dark-line bg-dark-panel">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img src="/assets/images/channels4_profile.jpg" alt="" class="w-8 h-8 rounded-full border border-dark-line">
-        <strong class="text-white text-lg">Admin</strong>
-        <span class="text-dark-muted hidden sm:inline">• Woodrum</span>
-      </div>
-      <div class="flex items-center gap-3">
-        <button id="newPostBtn" class="btn px-4 py-2 hidden">New Post</button>
-        <button id="loginBtn" class="btn px-4 py-2">Login with GitHub</button>
-        <button id="logoutBtn" class="px-3 py-2 rounded-xl border border-dark-line text-dark-muted hover:text-dark-text hover:bg-dark-bg hidden">Logout</button>
-      </div>
-    </div>
-  </header>
+  });
+  return { fm, body: m[2] || "" };
+};
 
-  <!-- App -->
-  <main class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Left: list + editor -->
-    <section class="space-y-6">
-      <!-- Posts list -->
-      <div class="card p-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold text-white">Posts</h2>
-          <input id="search" class="input px-3 py-2 w-48" placeholder="Search…" />
-        </div>
-        <ul id="postList" class="mt-3 divide-y divide-dark-line"></ul>
-      </div>
+// GitHub REST wrapper
+async function gh(path, init = {}) {
+  if (!token) throw new Error("Not logged in");
+  const res = await fetch(`https://api.github.com${path}`, {
+    ...init,
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `token ${token}`,
+      "X-GitHub-Api-Version": "2022-11-28",
+      ...(init.headers || {}),
+    },
+  });
+  if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+  return res.json();
+}
+async function getContent(path) {
+  return gh(`/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`);
+}
+async function putContent(path, contentB64, message, sha) {
+  return gh(`/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
+    method: "PUT",
+    body: JSON.stringify({ message, content: contentB64, branch: BRANCH, sha }),
+  });
+}
+async function deleteContent(path, message, sha) {
+  return gh(`/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
+    method: "DELETE",
+    body: JSON.stringify({ message, branch: BRANCH, sha }),
+  });
+}
 
-      <!-- Editor -->
-      <div class="card p-4">
-        <h2 class="text-xl font-bold text-white">Editor</h2>
-        <form id="editor" class="mt-3 space-y-3">
-          <input type="hidden" id="editPath">
-          <label class="block text-sm text-dark-muted">Title</label>
-          <input id="title" class="input w-full px-3 py-2" placeholder="Post title" />
+// --------- AUTH ----------
+function setAuthedUI(on) {
+  loginBtn.classList.toggle("hidden", on);
+  logoutBtn.classList.toggle("hidden", !on);
+  newPostBtn.classList.toggle("hidden", !on);
+}
+function readTokenFromHash() {
+  if (location.hash.startsWith("#token=")) {
+    const t = location.hash.slice(7);
+    sessionStorage.setItem("gh_token", t);
+    history.replaceState({}, "", location.pathname);
+  }
+  token = sessionStorage.getItem("gh_token");
+  setAuthedUI(!!token);
+}
+loginBtn.addEventListener("click", () => {
+  const url = new URL(`${OAUTH_HOST}/api/auth`);
+  url.searchParams.set("provider", "github");
+  url.searchParams.set("site_id", "wooldrum.github.io");
+  url.searchParams.set("scope", "repo,user");
+  url.searchParams.set("returnTo", RETURN_TO);
+  location.href = url.toString();
+});
+logoutBtn.addEventListener("click", () => {
+  sessionStorage.removeItem("gh_token");
+  token = null;
+  setAuthedUI(false);
+  postList.innerHTML = "";
+  assetGrid.innerHTML = "";
+  previewEl.innerHTML = `<p class="text-dark-muted">Logged out.</p>`;
+});
+readTokenFromHash();
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm text-dark-muted">Date</label>
-              <input id="date" type="datetime-local" class="input w-full px-3 py-2" />
-            </div>
-            <div>
-              <label class="block text-sm text-dark-muted">Image (uploads to assets/images/)</label>
-              <input id="imageFile" type="file" accept="image/*" class="block w-full text-sm text-dark-muted" />
-              <input id="imageUrl" class="input mt-2 w-full px-3 py-2" placeholder="or paste existing /assets/images/… path" />
-            </div>
-          </div>
+// --------- TABS ----------
+function setActiveTab(which) {
+  const onPosts = which === "posts";
+  postsTabBtn.classList.toggle("tab-active", onPosts);
+  assetsTabBtn.classList.toggle("tab-active", !onPosts);
+  postsView.classList.toggle("hidden", !onPosts);
+  assetsView.classList.toggle("hidden", onPosts);
+  if (!onPosts) listAssets().catch(console.error);
+}
+postsTabBtn.addEventListener("click", () => setActiveTab("posts"));
+assetsTabBtn.addEventListener("click", () => setActiveTab("assets"));
 
-          <label class="block text-sm text-dark-muted">Body (Markdown)</label>
-          <textarea id="body" rows="12" class="textarea w-full p-3"></textarea>
+// --------- POSTS LIST ----------
+async function listPosts() {
+  const items = await getContent(POSTS_DIR);
+  const files = items
+    .filter((i) => i.type === "file" && /\.md$/i.test(i.name))
+    .sort((a, b) => (a.name < b.name ? 1 : -1)); // newest-first by filename
 
-          <div class="flex gap-3">
-            <button id="saveBtn" class="btn px-4 py-2" type="submit">Save</button>
-            <button id="deleteBtn" class="px-3 py-2 rounded-xl border border-dark-line text-red-300 hover:bg-red-500/10 hidden" type="button">Delete</button>
-            <button id="resetBtn" class="px-3 py-2 rounded-xl border border-dark-line text-dark-muted hover:text-dark-text hover:bg-dark-bg" type="button">Reset</button>
-          </div>
-        </form>
-      </div>
-    </section>
+  postList.innerHTML = "";
+  for (const f of files) {
+    const file = await getContent(`${POSTS_DIR}/${f.name}`);
+    const raw = unb64(file.content);
+    const { fm } = parseFrontmatter(raw);
+    const li = document.createElement("li");
+    li.className = "py-3";
+    li.innerHTML = `
+      <button class="w-full text-left px-3 py-3 bg-[#0b1430] rounded-xl border border-dark-line hover:border-dark-accent">
+        <div class="text-white font-semibold">${fm.title || f.name}</div>
+        <div class="text-xs text-dark-muted">${fm.date ? new Date(fm.date).toLocaleString() : ""} • ${f.name}</div>
+      </button>`;
+    li.querySelector("button").addEventListener("click", () => loadPost(`${POSTS_DIR}/${f.name}`, file.sha, raw));
+    postList.appendChild(li);
+  }
+}
 
-    <!-- Right: preview -->
-    <section class="card p-4">
-      <h2 class="text-xl font-bold text-white">Preview</h2>
-      <article id="preview" class="prose prose-invert max-w-none mt-3">
-        <p class="text-dark-muted">Start a new post or pick one from the list.</p>
-      </article>
-    </section>
-  </main>
+// --------- EDITOR / DATE NOW ----------
+function setDateNow() { dateEl.value = fmtDate(new Date()); }
+function fillEditor(path, sha, raw) {
+  const { fm, body } = parseFrontmatter(raw);
+  editPathEl.value = path;
+  current = { path, sha, frontmatter: fm, body };
+  titleEl.value = fm.title || "";
+  dateEl.value = fm.date ? fmtDate(fm.date) : fmtDate(new Date());
+  imgUrlEl.value = fm.image || "";
+  bodyEl.value = body || "";
+  deleteBtn.classList.remove("hidden");
+  updatePreview();
+}
+async function loadPost(path, shaHint, rawHint) {
+  if (!shaHint || !rawHint) {
+    const file = await getContent(path);
+    fillEditor(path, file.sha, unb64(file.content));
+  } else {
+    fillEditor(path, shaHint, rawHint);
+  }
+}
+function resetEditor() {
+  current = null;
+  editPathEl.value = "";
+  titleEl.value = "";
+  setDateNow();
+  imgFileEl.value = "";
+  imgUrlEl.value = "";
+  bodyEl.value = "";
+  deleteBtn.classList.add("hidden");
+  updatePreview();
+}
+document.getElementById("resetBtn").addEventListener("click", resetEditor);
+document.getElementById("newPostBtn").addEventListener("click", () => {
+  setActiveTab("posts");
+  resetEditor();
+});
+setDateNow(); // initial auto-fill
 
-  <script type="module" src="./admin.js"></script>
-</body>
-</html>
+// --------- EDITOR TOOLBAR ----------
+(function buildToolbar(){
+  const toolbar = document.createElement("div");
+  toolbar.className = "flex flex-wrap items-center gap-2 mb-2";
+  const btnClass = "px-2 py-1 rounded-xl border border-dark-line bg-dark-panel text-dark-muted hover:border-dark-accent";
+  const mkBtn = (label, title, onClick) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = btnClass; b.title = title; b.textContent = label;
+    b.addEventListener("click", onClick); return b;
+  };
+  const wrapSel = (before, after = before) => {
+    bodyEl.focus();
+    const s = bodyEl.selectionStart ?? 0, e = bodyEl.selectionEnd ?? 0;
+    const val = bodyEl.value, sel = val.slice(s, e) || "text";
+    const out = val.slice(0, s) + before + sel + after + val.slice(e);
+    bodyEl.value = out;
+    const pos = s + before.length + sel.length + after.length;
+    bodyEl.setSelectionRange(pos, pos); updatePreview();
+  };
+  const insertLink = () => {
+    bodyEl.focus();
+    const s = bodyEl.selectionStart ?? 0, e = bodyEl.selectionEnd ?? 0;
+    const val = bodyEl.value, sel = val.slice(s, e) || "link text";
+    const url = prompt("URL for the link:", "https://"); if (!url) return;
+    const md = `[${sel}](${url})`; bodyEl.value = val.slice(0, s) + md + val.slice(e);
+    const pos = s + md.length; bodyEl.setSelectionRange(pos, pos); updatePreview();
+  };
+  const applySize = (em) => wrapSel(`<span style="font-size:${em}">`, `</span>`);
+
+  toolbar.appendChild(mkBtn("B", "Bold", () => wrapSel("**", "**")));
+  toolbar.appendChild(mkBtn("I", "Italic", () => wrapSel("*", "*")));
+  toolbar.appendChild(mkBtn("🔗", "Link", insertLink));
+  toolbar.appendChild(mkBtn("HL", "Highlight", () => wrapSel("<mark>", "</mark>")));
+  const sel = document.createElement("select");
+  sel.className = "px-2 py-1 rounded-xl border border-dark-line bg-dark-panel text-dark-muted hover:border-dark-accent";
+  ["Size","Small","Normal","Large","X-Large"].forEach((t,i)=>{const o=document.createElement("option");o.value=i?t.toLowerCase():"";o.textContent=t;sel.appendChild(o);});
+  sel.addEventListener("change", ()=>{ if(!sel.value) return; ({small:"0.9em",normal:"1em",large:"1.25em","x-large":"1.5em"}[sel.value]) && applySize({small:"0.9em",normal:"1em",large:"1.25em","x-large":"1.5em"}[sel.value]); sel.value=""; });
+  toolbar.appendChild(sel);
+
+  bodyEl.parentElement.insertBefore(toolbar, bodyEl);
+})();
+
+// --------- PREVIEW ----------
+function updatePreview() {
+  const title = (titleEl.value || "Untitled").trim();
+  const dateIso = dateEl.value ? new Date(dateEl.value).toISOString() : new Date().toISOString();
+  const img = (imgUrlEl.value || "").trim();
+  let html = `<h1 class="text-2xl font-bold text-white">${title}</h1>`;
+  html += `<p class="text-sm text-dark-muted">${new Date(dateIso).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'})}</p>`;
+  if (img) html += `<img src="${img}" class="mt-4 rounded-xl border border-dark-line max-w-full"/>`;
+  const md = bodyEl.value || "";
+  html += `<div class="mt-3 prose prose-invert max-w-none">${DOMPurify.sanitize(marked.parse(md))}</div>`;
+  previewEl.innerHTML = html;
+}
+["input","change"].forEach(evt=>{
+  titleEl.addEventListener(evt, updatePreview);
+  dateEl.addEventListener(evt, updatePreview);
+  imgUrlEl.addEventListener(evt, updatePreview);
+  bodyEl.addEventListener(evt, updatePreview);
+});
+updatePreview();
+
+// --------- IMAGE UPLOAD (for editor) ----------
+async function maybeUploadImage() {
+  const file = imgFileEl.files?.[0];
+  if (!file) return imgUrlEl.value.trim() || "";
+  const array = new Uint8Array(await file.arrayBuffer());
+  let binary = ""; array.forEach((b) => (binary += String.fromCharCode(b)));
+  const contentB64 = b64(binary);
+  const cleanName = file.name.replace(/\s+/g, "-");
+  const path = `${IMAGES_DIR}/${Date.now()}-${cleanName}`;
+  const res = await putContent(path, contentB64, `upload image ${cleanName}`);
+  return `/${IMAGES_DIR}/${res.content.name}`.replace(/\/+/g, "/");
+}
+
+// --------- SAVE / DELETE ----------
+async function savePost(e) {
+  e?.preventDefault?.();
+  const title = titleEl.value.trim();
+  const date = dateEl.value ? new Date(dateEl.value) : new Date();
+  if (!title) return alert("Title required");
+
+  const imagePath = await maybeUploadImage();
+  if (imagePath) imgUrlEl.value = imagePath;
+
+  const data = { title, date: date.toISOString(), image: imgUrlEl.value.trim() || undefined, body: bodyEl.value };
+  const content = toFrontmatter(data);
+  const contentB64 = b64(content);
+
+  let path = editPathEl.value, sha = current?.sha;
+  if (!path) {
+    const slug = slugify(title);
+    const yyyy = date.getFullYear(), mm = pad2(date.getMonth()+1), dd = pad2(date.getDate());
+    path = `${POSTS_DIR}/${yyyy}-${mm}-${dd}-${slug}.md`;
+  }
+
+  const message = current ? `update post: ${title}` : `create post: ${title}`;
+  const res = await putContent(path, contentB64, message, sha);
+  await listPosts();
+  await loadPost(path, res.content.sha, content);
+  alert("Saved!");
+}
+async function deletePostHandler() {
+  if (!current?.path || !current?.sha) return;
+  if (!confirm("Delete this post?")) return;
+  await deleteContent(current.path, `delete post ${current.path}`, current.sha);
+  resetEditor();
+  await listPosts();
+}
+document.getElementById("editor").addEventListener("submit", savePost);
+deleteBtn.addEventListener("click", deletePostHandler);
+
+// --------- SEARCH ----------
+searchEl.addEventListener("input", () => {
+  const q = searchEl.value.toLowerCase();
+  Array.from(postList.children).forEach((li) => {
+    const txt = li.textContent.toLowerCase();
+    li.classList.toggle("hidden", !txt.includes(q));
+  });
+});
+
+// --------- ASSETS ----------
+function isImageName(name) {
+  return /\.(png|jpe?g|gif|webp|svg)$/i.test(name);
+}
+async function listAssets() {
+  const items = await getContent(IMAGES_DIR).catch(() => []);
+  const files = (items || []).filter((i) => i.type === "file" && isImageName(i.name))
+                             .sort((a,b)=>a.name<b.name?1:-1);
+  assetGrid.innerHTML = "";
+  for (const f of files) {
+    const url = `/${IMAGES_DIR}/${f.name}`.replace(/\/+/g,"/");
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "group border border-dark-line rounded-2xl overflow-hidden bg-[#0b1430] hover:border-dark-accent";
+    card.innerHTML = `
+      <img src="${url}" alt="${f.name}" class="w-full h-28 object-cover block">
+      <div class="px-2 py-1 text-xs text-dark-muted truncate">${f.name}</div>
+    `;
+    card.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(url);
+      card.querySelector("div").textContent = "Copied!";
+      setTimeout(()=>card.querySelector("div").textContent = f.name, 900);
+    });
+    assetGrid.appendChild(card);
+  }
+}
+async function uploadAsset() {
+  const file = assetFileEl.files?.[0];
+  if (!file) return alert("Pick an image first.");
+  const array = new Uint8Array(await file.arrayBuffer());
+  let binary = ""; array.forEach((b) => (binary += String.fromCharCode(b)));
+  const contentB64 = b64(binary);
+  const cleanName = file.name.replace(/\s+/g, "-");
+  const path = `${IMAGES_DIR}/${Date.now()}-${cleanName}`;
+  await putContent(path, contentB64, `upload image ${cleanName}`);
+  assetFileEl.value = "";
+  await listAssets();
+}
+uploadAssetBtn.addEventListener("click", uploadAsset);
+
+// --------- INIT ----------
+(async function init() {
+  if (!token) return; // wait for login
+  try {
+    setActiveTab("posts");
+    await listPosts();
+  } catch (e) {
+    console.error(e);
+    alert("Failed to load. Are you logged into GitHub OAuth?");
+  }
+})();
