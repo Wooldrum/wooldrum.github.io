@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ page.title }} — Woodrum's Page</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -31,12 +30,10 @@
     .menu-item:hover { background:#0a1020; }
     .prose :where(a){ text-decoration: underline; }
   </style>
-
   <script defer src="/assets/main.js"></script>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
   <div class="flex flex-col md:flex-row min-h-screen">
-    <!-- LEFT RAIL (same as home) -->
     <aside class="w-full md:w-40 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
         <div class="h-44 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
@@ -46,41 +43,49 @@
                  class="h-24 w-24 rounded-full object-fill border-2 border-dark-line hover:border-dark-accent transition-colors sticky top-2">
           </button>
         </div>
-
-        <!-- Dropdown -->
         <div id="pfpMenu"
              class="hidden absolute left-2 top-40 z-50 w-36 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
           <a href="#" class="menu-item text-dark-muted">Placeholder 1</a>
           <a href="#" class="menu-item text-dark-muted">Placeholder 2</a>
           <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
-
         <nav class="flex flex-row md:flex-col w-full">
           <a href="{{ '/' | relative_url }}#blog" data-nav="blog" title="Blog"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Blog"
-                 alt="Blog Button" class="w-full h-full object-fill rounded block">
+            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Blog" alt="Blog Button" class="w-full h-full object-fill rounded block">
           </a>
           <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="/assets/images/zen-browser.png"
-                 alt="Zen Browser Button" class="w-full h-full object-fill rounded block">
+            <img src="/assets/images/zen-browser.png" alt="Zen Browser Button" class="w-full h-full object-fill rounded block">
           </a>
-          <a href="#" title="Button 3"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+3"
-                 alt="88x31 Button" class="w-full h-full object-fill rounded block">
+          <a href="#" class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
+            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+3" alt="" class="w-full h-full object-fill rounded block">
           </a>
-          <a href="#" title="Button 4"
-             class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+4"
-                 alt="88x31 Button" class="w-full h-full object-fill rounded block">
+          <a href="#" class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
+            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+4" alt="" class="w-full h-full object-fill rounded block">
           </a>
         </nav>
       </div>
     </aside>
 
-    <!-- POST CONTENT -->
     <main class="flex-1">
       <header class="h-44 px-6 md:px-10 border-b-2 border-dark-line flex items-center">
         <div>
+          <a href="{{ '/' | relative_url }}#blog" class="text-dark-accent underline">&larr; Back</a>
+          <h1 class="text-4xl md:text-5xl font-bold text-white mt-2">{{ page.title }}</h1>
+          <p class="text-dark-muted mt-2">{{ page.date | date: "%B %-d, %Y" }}</p>
+        </div>
+      </header>
+
+      <article class="p-6 md:p-10 text-dark-muted leading-relaxed max-w-3xl">
+        {% if page.image %}
+          <img src="{{ page.image | relative_url }}" alt="" class="mt-2 mb-6 rounded border border-dark-line" />
+        {% endif %}
+        <div class="prose prose-invert max-w-none">
+          {{ content }}
+        </div>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
