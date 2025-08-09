@@ -1,367 +1,190 @@
-// Admin — Posts + Assets (no modules, uses global marked & DOMPurify)
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — Woodrum</title>
 
-// CONFIG
-const OWNER = "Wooldrum";
-const REPO = "wooldrum.github.io";
-const BRANCH = "main";
-const POSTS_DIR = "_posts";
-const IMAGES_DIR = "assets/images";
-const LOGIN_PAGE = "/admin/login.html";
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-// DOM
-const tabBtns = document.querySelectorAll(".tab-btn");
-const tabPosts = document.getElementById("tab-posts");
-const tabAssets = document.getElementById("tab-assets");
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'dark-bg': '#0a1020',
+            'dark-panel': '#0d152b',
+            'dark-line': '#22345b',
+            'dark-text': '#e7efff',
+            'dark-muted': '#9fb2de',
+            'dark-accent': '#59a3ff',
+          },
+          borderRadius: { xl: '0.75rem', '2xl': '1rem' }
+        }
+      }
+    }
+  </script>
+  <style>
+    body{font-family:'IBM Plex Mono',monospace}
+    .btn{padding:.5rem 1rem;border-radius:.75rem;border:1px solid #22345b;color:#9fb2de}
+    .btn:hover{color:#e7efff;border-color:#59a3ff}
+    .btn-accent{padding:.5rem 1rem;border-radius:.75rem;background:#59a3ff;color:#000;font-weight:600}
+    .btn-accent:hover{opacity:.9}
+    .input, .textarea{background:#0a1020;border:1px solid #22345b;color:#e7efff;border-radius:.75rem}
+    .input:focus, .textarea:focus{outline:none;border-color:#59a3ff;box-shadow:0 0 0 3px rgba(89,163,255,.15)}
+    .toolbar button{border:1px solid #22345b;border-radius:.5rem;padding:.25rem .5rem}
+    .toolbar button:hover{border-color:#59a3ff}
+    .tab-btn{border-bottom:2px solid transparent}
+    .tab-btn.active{border-color:#59a3ff;color:#e7efff}
+    .card{background:#0d152b;border:1px solid #22345b;border-radius:1rem}
+    .preview a{text-decoration:underline}
+    .image-tile{aspect-ratio:1/1;object-fit:cover;border-radius:.75rem;border:1px solid #22345b}
 
-const postsList = document.getElementById("postsList");
-const newPostBtn = document.getElementById("newPostBtn");
-const saveBtn = document.getElementById("saveBtn");
-const resetBtn = document.getElementById("resetBtn");
+    /* drag & drop highlight */
+    .drop-target.dragover{outline:2px dashed #59a3ff; background:rgba(89,163,255,.06)}
+  </style>
 
-const titleEl = document.getElementById("title");
-const dateEl = document.getElementById("date");
-const imgFileEl = document.getElementById("imgFile");
-const imgPathEl = document.getElementById("imgPath");
-const bodyEl = document.getElementById("body");
-const previewEl = document.getElementById("preview");
+  <!-- Markdown + sanitize (global) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+</head>
 
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
+<body class="bg-dark-bg text-dark-text min-h-screen">
+  <!-- Header -->
+  <header class="sticky top-0 z-10 bg-dark-panel border-b border-dark-line">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <h1 class="text-xl font-bold">Woodrum Admin</h1>
+        <nav class="hidden md:flex items-center gap-4">
+          <button class="tab-btn text-dark-muted hover:text-dark-text active" data-tab="posts">Posts</button>
+          <button class="tab-btn text-dark-muted hover:text-dark-text" data-tab="assets">Assets</button>
+          <button class="tab-btn text-dark-muted hover:text-dark-text" data-tab="about">About</button>
+        </nav>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/" class="btn">Home</a>
+        <button id="loginBtn" class="btn hidden">Log in</button>
+        <button id="logoutBtn" class="btn hidden">Log out</button>
+      </div>
+    </div>
+  </header>
 
-const assetUploadEl = document.getElementById("assetUpload");
-const refreshAssetsBtn = document.getElementById("refreshAssets");
-const assetsGrid = document.getElementById("assetsGrid");
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Tabs (mobile) -->
+    <div class="md:hidden mb-4 flex gap-3">
+      <button class="tab-btn active" data-tab="posts">Posts</button>
+      <button class="tab-btn" data-tab="assets">Assets</button>
+      <button class="tab-btn" data-tab="about">About</button>
+    </div>
 
-let token = null;
-let currentPath = null;
-let currentSha = null;
+    <!-- POSTS TAB -->
+    <section id="tab-posts" class="grid md:grid-cols-2 gap-6">
+      <div class="space-y-6">
+        <div class="card p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-semibold">Posts</h2>
+            <button id="newPostBtn" class="btn-accent hidden">New Post</button>
+          </div>
+          <ul id="postsList" class="space-y-2 text-dark-muted"><li class="text-sm">Loading…</li></ul>
+        </div>
 
-// Helpers
-const ghBase = `https://api.github.com/repos/${OWNER}/${REPO}`;
-const headers = () => ({
-  Accept: "application/vnd.github+json",
-  Authorization: `token ${token}`,
-  "Content-Type": "application/json",
-});
-const pad = (n) => String(n).padStart(2, "0");
-const slugify = (s) =>
-  String(s || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-const localDateTimeValue = (d = new Date()) =>
-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        <div class="card p-4">
+          <h2 class="text-lg font-semibold mb-4">Editor</h2>
 
-function parseFrontmatter(md) {
-  if (!md.startsWith("---")) return { fm: {}, body: md };
-  const end = md.indexOf("\n---", 3);
-  if (end === -1) return { fm: {}, body: md };
-  const yaml = md.slice(3, end).trim();
-  const body = md.slice(end + 4).trim();
-  const fm = {};
-  yaml.split("\n").forEach((line) => {
-    const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-    if (m) fm[m[1]] = m[2].replace(/^"(.*)"$/, "$1");
-  });
-  return { fm, body };
-}
-function buildFrontmatter({ title, date, image, body }) {
-  const iso = new Date(date || Date.now()).toISOString();
-  const lines = [
-    "---",
-    `layout: post`,
-    `author: Woodrum`,
-    `title: "${String(title || "").replace(/"/g, '\\"')}"`,
-    `date: ${iso}`,
-  ];
-  if (image) lines.push(`image: ${image}`);
-  lines.push("---", "", body || "");
-  return lines.join("\n") + "\n";
-}
-function md2html(md) {
-  try {
-    return DOMPurify.sanitize(marked.parse(md || ""));
-  } catch {
-    return "<p>Preview unavailable.</p>";
-  }
-}
+          <label class="block text-sm text-dark-muted mb-1">Title</label>
+          <input id="title" class="input w-full px-3 py-2 mb-4" placeholder="Post title" />
 
-// Auth
-function setAuthedUI(on) {
-  loginBtn.classList.toggle("hidden", on);
-  logoutBtn.classList.toggle("hidden", !on);
-  newPostBtn.classList.toggle("hidden", !on);
-  saveBtn.classList.toggle("hidden", !on);
-}
-function readTokenFromHash() {
-  if (location.hash.startsWith("#token=")) {
-    const t = location.hash.slice(7);
-    sessionStorage.setItem("gh_token", t);
-    history.replaceState({}, "", location.pathname);
-  }
-}
-function ensureAuthed() {
-  readTokenFromHash();
-  token = sessionStorage.getItem("gh_token");
-  if (!token) {
-    const next = `${location.pathname}${location.search}`;
-    location.replace(`${LOGIN_PAGE}?next=${encodeURIComponent(next)}`);
-    throw new Error("redirecting to login");
-  }
-  setAuthedUI(true);
-}
-loginBtn?.addEventListener("click", () => {
-  const next = `${location.pathname}${location.search}`;
-  location.href = `${LOGIN_PAGE}?next=${encodeURIComponent(next)}`;
-});
-logoutBtn?.addEventListener("click", () => {
-  sessionStorage.removeItem("gh_token");
-  token = null;
-  setAuthedUI(false);
-  location.replace(`${LOGIN_PAGE}?next=${encodeURIComponent("/admin/index.html")}`);
-});
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-dark-muted mb-1">Date</label>
+              <input id="date" type="datetime-local" class="input w-full px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm text-dark-muted mb-1">Image (uploads to assets/images/)</label>
+              <input id="imgFile" type="file" accept="image/*" class="block w-full text-sm text-dark-muted" />
+              <input id="imgPath" type="text" class="input w-full px-3 py-2 mt-2" placeholder="or paste /assets/images/… or URL" />
+            </div>
+          </div>
 
-// Tabs
-function setActiveTab(which) {
-  const onPosts = which === "posts";
-  tabBtns.forEach((b) => b.classList.toggle("active", b.dataset.tab === which));
-  tabPosts.classList.toggle("hidden", !onPosts);
-  tabAssets.classList.toggle("hidden", onPosts);
-}
-tabBtns.forEach((b) => b.addEventListener("click", () => setActiveTab(b.dataset.tab)));
+          <div class="toolbar flex flex-wrap gap-2 mt-4">
+            <button data-cmd="bold">B</button>
+            <button data-cmd="italic"><em>I</em></button>
+            <button data-cmd="link">Link</button>
+            <button data-cmd="highlight">Highlight</button>
+            <span class="ml-2 text-dark-muted text-sm">Font:</span>
+            <select id="fontSize" class="input px-2 py-1">
+              <option value="normal">Normal</option>
+              <option value="small">Small</option>
+              <option value="large">Large</option>
+              <option value="xlarge">XL</option>
+            </select>
+          </div>
 
-// GitHub API
-async function getJSON(url) {
-  const r = await fetch(url, { headers: headers() });
-  if (!r.ok) throw new Error(`${r.status}: ${url}`);
-  return r.json();
-}
-async function getDir(dir) {
-  return getJSON(`${ghBase}/contents/${dir}?ref=${BRANCH}`);
-}
-async function getFile(path) {
-  return getJSON(`${ghBase}/contents/${path}?ref=${BRANCH}`);
-}
-async function putFile(path, contentB64, message, sha = null) {
-  const body = { message, content: contentB64, branch: BRANCH };
-  if (sha) body.sha = sha;
-  const r = await fetch(`${ghBase}/contents/${path}`, {
-    method: "PUT",
-    headers: headers(),
-    body: JSON.stringify(body),
-  });
-  if (!r.ok) throw new Error(`PUT ${path} failed: ${await r.text()}`);
-  return r.json();
-}
+          <label class="block text-sm text-dark-muted mt-4 mb-1">Body (Markdown)</label>
+          <textarea id="body" rows="12" class="textarea w-full p-3 drop-target" placeholder="Write in Markdown… (you can also drag & drop images here)"></textarea>
 
-// Posts
-async function listPosts() {
-  postsList.innerHTML = `<li class="text-sm text-dark-muted">Loading…</li>`;
-  const items = await getDir(POSTS_DIR);
-  const files = items
-    .filter((i) => i.type === "file" && /\.md$/i.test(i.name))
-    .sort((a, b) => b.name.localeCompare(a.name)); // newest by filename
-  if (!files.length) {
-    postsList.innerHTML = `<li class="text-sm text-dark-muted">No posts yet.</li>`;
-    return;
-  }
-  postsList.innerHTML = "";
-  for (const f of files) {
-    const li = document.createElement("li");
-    li.className = "flex items-center justify-between gap-2";
-    const btn = document.createElement("button");
-    btn.className = "text-left hover:underline";
-    btn.textContent = f.name.replace(/\.md$/, "");
-    btn.addEventListener("click", () => loadPost(`${POSTS_DIR}/${f.name}`));
-    li.appendChild(btn);
-    postsList.appendChild(li);
-  }
-}
-async function loadPost(path) {
-  const json = await getFile(path);
-  const raw = atob(json.content);
-  currentPath = path;
-  currentSha = json.sha;
+          <div class="mt-4 flex gap-2">
+            <button id="saveBtn" class="btn-accent hidden">Save</button>
+            <button id="resetBtn" class="btn">Reset</button>
+          </div>
+        </div>
+      </div>
 
-  const { fm, body } = parseFrontmatter(raw);
-  titleEl.value = fm.title || "";
-  dateEl.value = localDateTimeValue(fm.date ? new Date(fm.date) : new Date());
-  imgPathEl.value = fm.image || "";
-  bodyEl.value = body || "";
-  updatePreview();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-function setDateNow() {
-  dateEl.value = localDateTimeValue(new Date());
-}
-function resetEditor() {
-  currentPath = null;
-  currentSha = null;
-  titleEl.value = "";
-  imgPathEl.value = "";
-  bodyEl.value = "";
-  setDateNow();
-  updatePreview();
-}
-newPostBtn.addEventListener("click", resetEditor);
-resetBtn.addEventListener("click", resetEditor);
+      <aside class="card p-4 h-fit">
+        <h2 class="text-lg font-semibold">Preview</h2>
+        <div id="preview" class="preview prose prose-invert max-w-none mt-3 text-dark-muted"></div>
+      </aside>
+    </section>
 
-async function savePost() {
-  const title = titleEl.value.trim();
-  if (!title) return alert("Title is required.");
+    <!-- ASSETS TAB -->
+    <section id="tab-assets" class="hidden space-y-6">
+      <div class="card p-4">
+        <h2 class="text-lg font-semibold mb-3">Upload image</h2>
+        <input id="assetUpload" type="file" accept="image/*" class="block text-sm text-dark-muted" />
+        <p class="text-xs text-dark-muted mt-2">Uploaded files land in <code>/assets/images/</code>. You can also drag & drop into the grid below.</p>
+      </div>
+      <div class="card p-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Images</h2>
+          <button id="refreshAssets" class="btn">Refresh</button>
+        </div>
+        <div id="assetsGrid" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 drop-target">
+          <div class="text-sm text-dark-muted">Loading…</div>
+        </div>
+      </div>
+    </section>
 
-  // Upload image if chosen
-  if (imgFileEl.files?.[0]) {
-    const f = imgFileEl.files[0];
-    const clean = `${Date.now()}-${slugify(f.name)}`.replace(/[^a-z0-9.\-]/g, "");
-    const path = `${IMAGES_DIR}/${clean}`;
-    const buf = await f.arrayBuffer();
-    const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-    await putFile(path, b64, `Upload ${clean}`);
-    imgPathEl.value = `/${path}`;
-  }
+    <!-- ABOUT TAB -->
+    <section id="tab-about" class="hidden grid md:grid-cols-2 gap-6">
+      <div class="card p-4">
+        <h2 class="text-lg font-semibold">About content</h2>
+        <p class="text-sm text-dark-muted mb-3">Editing <code>/assets/content/about.md</code>. You can use Markdown and drag & drop images.</p>
 
-  const d = new Date(dateEl.value || Date.now());
-  const yyyy = d.getFullYear();
-  const mm = pad(d.getMonth() + 1);
-  const dd = pad(d.getDate());
-  const base = `${yyyy}-${mm}-${dd}-${slugify(title) || "post"}.md`;
-  const path = currentPath || `${POSTS_DIR}/${base}`;
+        <div class="toolbar flex flex-wrap gap-2">
+          <button data-cmd="about-bold" class="">B</button>
+          <button data-cmd="about-italic"><em>I</em></button>
+          <button data-cmd="about-link">Link</button>
+          <button data-cmd="about-highlight">Highlight</button>
+        </div>
 
-  const content = buildFrontmatter({
-    title,
-    date: d.toISOString(),
-    image: imgPathEl.value.trim() || undefined,
-    body: bodyEl.value,
-  });
-  const b64 = btoa(unescape(encodeURIComponent(content)));
-  const msg = currentPath ? `Update ${path}` : `Create ${path}`;
-  await putFile(path, b64, msg, currentSha || null);
+        <textarea id="aboutBody" rows="16" class="textarea w-full p-3 mt-3 drop-target" placeholder="Write your About in Markdown…"></textarea>
 
-  alert("Saved!");
-  await listPosts();
-  await loadPost(path);
-}
-saveBtn.addEventListener("click", savePost);
+        <div class="mt-4 flex gap-2">
+          <button id="saveAboutBtn" class="btn-accent hidden">Save About</button>
+          <button id="resetAboutBtn" class="btn">Reset</button>
+        </div>
+      </div>
 
-// Editor toolbar
-document.querySelector(".toolbar").addEventListener("click", (e) => {
-  const b = e.target.closest("button[data-cmd]");
-  if (!b) return;
-  const cmd = b.dataset.cmd;
-  const wrap = (before, after = before, placeholder = "text") => {
-    const s = bodyEl.selectionStart ?? 0;
-    const epos = bodyEl.selectionEnd ?? 0;
-    const v = bodyEl.value;
-    const sel = v.slice(s, epos) || placeholder;
-    bodyEl.value = v.slice(0, s) + before + sel + after + v.slice(epos);
-    bodyEl.setSelectionRange(s + before.length + sel.length + after.length, s + before.length + sel.length + after.length);
-    bodyEl.focus();
-    updatePreview();
-  };
-  if (cmd === "bold") return wrap("**", "**", "bold");
-  if (cmd === "italic") return wrap("*", "*", "italic");
-  if (cmd === "highlight") return wrap("<mark>", "</mark>", "highlight");
-  if (cmd === "link") {
-    const url = prompt("Link URL:", "https://");
-    if (!url) return;
-    const s = bodyEl.selectionStart ?? 0;
-    const epos = bodyEl.selectionEnd ?? 0;
-    const v = bodyEl.value;
-    const sel = v.slice(s, epos) || "link text";
-    const out = `${v.slice(0, s)}[${sel}](${url})${v.slice(epos)}`;
-    bodyEl.value = out;
-    bodyEl.setSelectionRange(s + out.length, s + out.length);
-    updatePreview();
-  }
-});
-document.getElementById("fontSize").addEventListener("change", (e) => {
-  const map = { small: "0.9em", normal: "1em", large: "1.25em", xlarge: "1.5em" };
-  const em = map[e.target.value];
-  if (em) {
-    const s = bodyEl.selectionStart ?? 0;
-    const epos = bodyEl.selectionEnd ?? 0;
-    const v = bodyEl.value;
-    const sel = v.slice(s, epos) || "text";
-    bodyEl.value = `${v.slice(0, s)}<span style="font-size:${em}">${sel}</span>${v.slice(epos)}`;
-    updatePreview();
-    e.target.value = "normal";
-  }
-});
+      <aside class="card p-4 h-fit">
+        <h2 class="text-lg font-semibold">About Preview</h2>
+        <div id="aboutPreview" class="preview prose prose-invert max-w-none mt-3 text-dark-muted"></div>
+      </aside>
+    </section>
+  </main>
 
-// Preview
-function updatePreview() {
-  const t = titleEl.value.trim() || "Untitled";
-  const d = new Date(dateEl.value || Date.now());
-  const img = imgPathEl.value.trim();
-  let html = `<h1 class="text-2xl font-bold text-white">${t}</h1>`;
-  html += `<p class="text-sm text-dark-muted">${d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</p>`;
-  if (img) html += `<img class="mt-4 rounded-xl border border-dark-line" src="${img}" alt="">`;
-  html += `<div class="mt-4 text-dark-muted leading-relaxed">${md2html(bodyEl.value)}</div>`;
-  previewEl.innerHTML = html;
-}
-["input", "change"].forEach((evt) => {
-  [titleEl, dateEl, imgPathEl, bodyEl].forEach((n) => n.addEventListener(evt, updatePreview));
-});
-
-// Assets
-async function loadAssets() {
-  assetsGrid.innerHTML = `<div class="text-sm text-dark-muted">Loading…</div>`;
-  let items = [];
-  try {
-    items = await getDir(IMAGES_DIR);
-  } catch {}
-  const files = items.filter((i) => i.type === "file").sort((a, b) => b.name.localeCompare(a.name));
-  if (!files.length) {
-    assetsGrid.innerHTML = `<div class="text-sm text-dark-muted">No images found.</div>`;
-    return;
-  }
-  assetsGrid.innerHTML = "";
-  for (const f of files) {
-    const url = `/${IMAGES_DIR}/${f.name}`;
-    const cell = document.createElement("div");
-    cell.className = "space-y-2";
-    const img = document.createElement("img");
-    img.src = url; img.alt = f.name; img.className = "image-tile w-full";
-    const row = document.createElement("div");
-    row.className = "flex items-center justify-between text-xs text-dark-muted";
-    const name = document.createElement("span");
-    name.className = "truncate max-w-[10rem]";
-    name.textContent = f.name;
-    const add = document.createElement("button");
-    add.className = "btn px-2 py-1";
-    add.textContent = "Insert";
-    add.addEventListener("click", () => {
-      imgPathEl.value = url;
-      updatePreview();
-      setActiveTab("posts");
-    });
-    row.append(name, add);
-    cell.append(img, row);
-    assetsGrid.appendChild(cell);
-  }
-}
-assetUploadEl.addEventListener("change", async () => {
-  const f = assetUploadEl.files?.[0];
-  if (!f) return;
-  const clean = `${Date.now()}-${slugify(f.name)}`.replace(/[^a-z0-9.\-]/g, "");
-  const path = `${IMAGES_DIR}/${clean}`;
-  const buf = await f.arrayBuffer();
-  const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-  await putFile(path, b64, `Upload ${clean}`);
-  await loadAssets();
-  alert("Uploaded.");
-});
-refreshAssetsBtn.addEventListener("click", loadAssets);
-
-// Init
-(async function init() {
-  ensureAuthed();
-  setActiveTab("posts");
-  dateEl.value = localDateTimeValue(new Date()); // auto-fill now
-  updatePreview();
-  await listPosts();
-  await loadAssets();
-})();
+  <script defer src="./admin.js"></script>
+</body>
+</html>
