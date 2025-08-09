@@ -1,0 +1,35 @@
+(function () {
+  const body = document.body;
+  const aboutBtn = document.querySelector('[data-nav="about"]');
+  const blogBtn  = document.querySelector('[data-nav="blog"]');
+
+  function applyModeFromHash() {
+    if (location.hash === '#blog') {
+      body.classList.add('blog-mode');
+    } else {
+      body.classList.remove('blog-mode');
+    }
+  }
+
+  if (aboutBtn) {
+    aboutBtn.addEventListener('click', () => {
+      body.classList.remove('blog-mode');
+      if (location.hash !== '#about') {
+        history.pushState({ view: 'about' }, '', '#about');
+      }
+    });
+  }
+
+  if (blogBtn) {
+    blogBtn.addEventListener('click', () => {
+      body.classList.add('blog-mode');
+      if (location.hash !== '#blog') {
+        history.pushState({ view: 'blog' }, '', '#blog');
+      }
+    });
+  }
+
+  window.addEventListener('popstate', applyModeFromHash);
+  window.addEventListener('hashchange', applyModeFromHash);
+  applyModeFromHash(); // initialize at load
+})();
