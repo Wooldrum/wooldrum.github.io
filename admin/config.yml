@@ -4,7 +4,7 @@ backend:
   repo: wooldrum/wooldrum.github.io
   branch: main
   base_url: https://wooldrum-decap-oauth.vercel.app
-  auth_endpoint: auth
+  auth_endpoint: api/auth
 
 site_url: https://wooldrum.github.io
 logo_url: https://wooldrum.github.io/assets/images/channels4_profile.jpg
