@@ -1,69 +1,67 @@
+// main.js for front page
 (function () {
-  const body = document.body;
+  const $ = (sel) => document.querySelector(sel);
 
-  // --- Mode by #hash (kept)
-  function setModeFromHash() {
-    if (location.hash === '#blog') body.classList.add('blog-mode');
-    else body.classList.remove('blog-mode');
-  }
-  window.addEventListener('hashchange', setModeFromHash);
-  setModeFromHash();
+  // 1) PFP dropdown
+  const pfpToggle = $("#pfpToggle");
+  const pfpMenu   = $("#pfpMenu");
 
-  // --- PFP dropdown (robust)
-  const pfpToggle = document.getElementById('pfpToggle');
-  const pfpMenu   = document.getElementById('pfpMenu');
   if (pfpToggle && pfpMenu) {
-    const toggleMenu = (e) => {
-      e?.preventDefault?.();
-      pfpMenu.classList.toggle('hidden');
-    };
-    pfpToggle.addEventListener('click', toggleMenu);
-    pfpToggle.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') toggleMenu(e); });
-
-    document.addEventListener('click', (e) => {
-      if (pfpMenu.classList.contains('hidden')) return;
-      const inside = pfpMenu.contains(e.target) || pfpToggle.contains(e.target);
-      if (!inside) pfpMenu.classList.add('hidden');
+    pfpToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      pfpMenu.classList.toggle("hidden");
+    });
+    document.addEventListener("click", (e) => {
+      if (!pfpMenu.classList.contains("hidden")) {
+        const inside = pfpMenu.contains(e.target) || pfpToggle.contains(e.target);
+        if (!inside) pfpMenu.classList.add("hidden");
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") pfpMenu.classList.add("hidden");
     });
   }
 
-  // --- EXACT header alignment with avatar tile (including borders)
-  function syncHeaderHeight() {
-    const header = document.getElementById('pageHeader');
-    const pfpBox = document.getElementById('pfpBox');
-    if (!header || !pfpBox) return;
-    // Use painted size (padding + borders)
-    const h = Math.round(pfpBox.getBoundingClientRect().height);
-    document.documentElement.style.setProperty('--pfp-h', `${h}px`);
-    header.style.height = `${h}px`;
-  }
-  window.addEventListener('load', syncHeaderHeight);
-  window.addEventListener('resize', syncHeaderHeight);
-
-  // --- About content (path provided by data-attr so Jekyll resolves correctly)
-  async function loadAbout() {
-    const out = document.getElementById('aboutContent');
-    if (!out) return;
-    const src = out.getAttribute('data-src') || 'assets/content/about.md';
-    try {
-      const res = await fetch(src, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-      const md = await res.text();
-      out.innerHTML = DOMPurify.sanitize(marked.parse(md));
-    } catch (err) {
-      console.error('about.md load failed:', err);
-      out.innerHTML = `<p class="text-red-300">Failed to load About content.</p>`;
+  // 2) Keep header/left-rail border lines perfectly aligned
+  function syncHeights() {
+    const p = $("#leftRail .pfpH");
+    const h = $("header.pfpH");
+    if (p && h) {
+      // share whatever real pixel height the PFP tile ended up with
+      const px = Math.round(p.getBoundingClientRect().height);
+      document.documentElement.style.setProperty("--pfpH", px + "px");
     }
   }
-  window.addEventListener('load', loadAbout);
+  window.addEventListener("load", syncHeights);
+  window.addEventListener("resize", syncHeights);
 
-  // --- Mobile: hide the "Cool stuff" label tile (icons remain)
-  function mobileCoolStuff() {
-    const label = document.querySelector('.tile-label');
-    if (!label) return;
-    if (window.matchMedia('(max-width: 767px)').matches) label.classList.add('hidden');
-    else label.classList.remove('hidden');
+  // 3) ABOUT loader: fetch markdown and render
+  async function loadAbout() {
+    const box = $("#aboutBody");
+    if (!box) return;
+    try {
+      const bust = "{{ site.time | date: '%s' }}";
+      const res = await fetch(`/assets/content/about.md?ts=${bust}`);
+      if (!res.ok) throw new Error(`${res.status}`);
+      const md = await res.text();
+      // marked is global from CDN
+      const html = DOMPurify.sanitize(marked.parse(md));
+      box.innerHTML = html;
+    } catch (err) {
+      box.textContent = "Failed to load About.";
+      console.error("About load error:", err);
+    }
   }
-  window.addEventListener('load', mobileCoolStuff);
-  window.addEventListener('resize', mobileCoolStuff);
+  loadAbout();
+
+  // 4) Optional: blog-only view via hash (kept from original)
+  const blogLink = document.querySelector('[data-nav="blog"]');
+  if (blogLink) {
+    blogLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.body.classList.add("blog-mode");
+      const blog = document.getElementById("blog");
+      if (blog) blog.scrollIntoView({ behavior: "smooth" });
+    });
+  }
 })();
