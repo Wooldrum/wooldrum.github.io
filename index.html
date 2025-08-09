@@ -1,3 +1,5 @@
+---
+---
 <!doctype html>
 <html lang="en" class="dark">
 <head>
@@ -33,9 +35,9 @@
     body { font-family: 'IBM Plex Mono', monospace; }
     body.blog-mode #about { display: none; }
     html, body { overflow: visible; }
+    .prose :where(a){text-decoration:underline}
   </style>
 
-  <!-- Only keep this one script -->
   <script defer src="/assets/main.js"></script>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
@@ -44,7 +46,6 @@
     <!-- LEFT RAIL -->
     <aside class="w-full md:w-40 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col">
-        <!-- PFP (sticks) -->
         <div class="h-44 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
           <a href="#about" class="block" title="About Me" data-nav="about">
             <img
@@ -55,7 +56,6 @@
           </a>
         </div>
 
-        <!-- Buttons (fill boxes) -->
         <nav class="flex flex-row md:flex-col w-full">
           <a href="#blog" data-nav="blog" title="Blog"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
@@ -83,13 +83,11 @@
 
     <!-- MAIN -->
     <main class="flex-1">
-      <!-- Header -->
       <header class="h-44 px-6 md:px-10 border-b-2 border-dark-line flex flex-col justify-center">
         <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
         <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
       </header>
 
-      <!-- About -->
       <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
         <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
         <p class="text-dark-muted leading-relaxed max-w-prose">
@@ -97,20 +95,14 @@
         </p>
       </section>
 
-      <!-- Blog -->
       <section id="blog" class="p-6 md:p-10">
         <div class="flex items-center justify-between">
           <h2 class="text-3xl font-bold text-white">Blog</h2>
-          <div class="flex items-center gap-3">
-            <!-- Decap handles auth inside /admin.
-                 These buttons are just shortcuts. -->
-            <a href="/admin/" class="px-3 py-1 rounded bg-dark-accent text-black font-semibold hover:opacity-90">
-              Open Editor
-            </a>
-          </div>
+          <a href="/admin/" class="px-3 py-1 rounded bg-dark-accent text-black font-semibold hover:opacity-90">
+            Open Editor
+          </a>
         </div>
 
-        <!-- Jekyll renders posts at build time -->
         <div class="mt-8 space-y-8">
           {% if site.posts == empty %}
             <article class="border-t border-dark-line pt-6">
