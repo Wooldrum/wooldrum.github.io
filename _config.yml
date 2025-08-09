@@ -6,7 +6,6 @@ markdown: kramdown
 theme: null
 
 permalink: /blog/:year/:month/:day/:slug/
-paginate: 0
 
 defaults:
   - scope:
