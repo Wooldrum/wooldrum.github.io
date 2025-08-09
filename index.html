@@ -4,11 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Woodrum's Page</title>
+
+  <!-- Tailwind + font -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Tailwind config -->
   <script>
     tailwind.config = {
       theme: {
@@ -27,23 +30,30 @@
     }
   </script>
 
+  <!-- Markdown + sanitize -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
   <style>
     body { font-family: 'IBM Plex Mono', monospace; }
-    /* Blog mode: hide About, show Blog full */
+    /* Blog-only view */
     body.blog-mode #about { display: none; }
-    /* Let sticky positioning work (no clipping) */
+    /* allow sticky elements to work */
     html, body { overflow: visible; }
   </style>
+
+  <!-- Our scripts -->
+  <script type="module" src="assets/app.js"></script>
   <script defer src="assets/main.js"></script>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
 
   <div class="flex flex-col md:flex-row min-h-screen">
-    <!-- LEFT RAIL / SIDEBAR (sticks as you scroll) -->
+    <!-- LEFT RAIL -->
     <aside class="w-full md:w-40 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col">
-        <!-- Profile Picture (only the image is sticky) -->
-        <div class="h-44 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center relative">
+        <!-- PFP (sticks) -->
+        <div class="h-44 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
           <a href="#about" class="block" title="About Me" data-nav="about">
             <img
               src="assets/channels4_profile.jpg"
@@ -53,40 +63,33 @@
           </a>
         </div>
 
-        <!-- Button Stack (buttons/images fill their boxes; yes, distorted) -->
+        <!-- Buttons (fill boxes) -->
         <nav class="flex flex-row md:flex-col w-full">
           <a href="#blog" data-nav="blog" title="Blog"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
             <img src="https://placehold.co/88x31/22345b/9fb2de?text=Blog"
-                 alt="Blog Button"
-                 class="w-full h-full object-fill rounded block">
+                 alt="Blog Button" class="w-full h-full object-fill rounded block">
           </a>
-
           <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
             <img src="assets/zen-browser.png"
-                 alt="Zen Browser Button"
-                 class="w-full h-full object-fill rounded block">
+                 alt="Zen Browser Button" class="w-full h-full object-fill rounded block">
           </a>
-
           <a href="#" title="Button 3"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
             <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+3"
-                 alt="88x31 Button"
-                 class="w-full h-full object-fill rounded block">
+                 alt="88x31 Button" class="w-full h-full object-fill rounded block">
           </a>
-
           <a href="#" title="Button 4"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
             <img src="https://placehold.co/88x31/22345b/9fb2de?text=Button+4"
-                 alt="88x31 Button"
-                 class="w-full h-full object-fill rounded block">
+                 alt="88x31 Button" class="w-full h-full object-fill rounded block">
           </a>
         </nav>
       </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN -->
     <main class="flex-1">
       <!-- Header -->
       <header class="h-44 px-6 md:px-10 border-b-2 border-dark-line flex flex-col justify-center">
@@ -102,32 +105,64 @@
         </p>
       </section>
 
-      <!-- Blog (no accordion; just content) -->
+      <!-- Blog -->
       <section id="blog" class="p-6 md:p-10">
-        <h2 class="text-3xl font-bold text-white">Blog</h2>
-        <div class="mt-8 space-y-8">
-          <article class="border-t border-dark-line pt-6">
-            <h3 class="text-2xl font-semibold text-dark-accent hover:underline">
-              <a href="#">My First Post: Setting Up GitHub Pages</a>
-            </h3>
-            <p class="text-sm text-dark-muted mt-1">August 8, 2025</p>
-            <p class="mt-3 text-dark-muted leading-relaxed max-w-prose">
-              How this site went from nothing to live in five minutes.
-            </p>
-          </article>
+        <div class="flex items-center justify-between">
+          <h2 class="text-3xl font-bold text-white">Blog</h2>
 
+          <!-- Auth + Write controls -->
+          <div class="flex items-center gap-3">
+            <button id="loginBtn"
+              class="hidden px-3 py-1 rounded border border-dark-line text-dark-muted hover:text-dark-text hover:bg-dark-panel">
+              Log in
+            </button>
+            <button id="logoutBtn"
+              class="hidden px-3 py-1 rounded border border-dark-line text-dark-muted hover:text-dark-text hover:bg-dark-panel">
+              Log out
+            </button>
+            <button id="writeBtn"
+              class="hidden px-3 py-1 rounded bg-dark-accent text-black font-semibold hover:opacity-90">
+              Write post
+            </button>
+          </div>
+        </div>
+
+        <!-- Posts render here -->
+        <div id="posts" class="mt-8 space-y-8">
+          <!-- Fallback if JS fails -->
           <article class="border-t border-dark-line pt-6">
-            <h3 class="text-2xl font-semibold text-dark-accent hover:underline">
-              <a href="#">A Deep Dive into Tailwind CSS</a>
-            </h3>
-            <p class="text-sm text-dark-muted mt-1">August 7, 2025</p>
-            <p class="mt-3 text-dark-muted leading-relaxed max-w-prose">
-              Why I keep coming back to it for projects like this.
-            </p>
+            <h3 class="text-2xl font-semibold text-dark-accent">Hello!</h3>
+            <p class="text-sm text-dark-muted mt-1">Posts will appear here once the app loads.</p>
           </article>
         </div>
       </section>
     </main>
   </div>
+
+  <!-- Write Post Modal -->
+  <div id="postModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-dark-panel border-2 border-dark-line rounded-xl p-6">
+      <h3 class="text-2xl font-bold mb-4">New Post</h3>
+      <label class="block text-sm text-dark-muted mb-1">Title</label>
+      <input id="postTitle" type="text"
+             class="w-full mb-4 px-3 py-2 rounded border border-dark-line bg-dark-bg text-dark-text"
+             placeholder="Post title">
+      <label class="block text-sm text-dark-muted mb-1">Body (Markdown supported)</label>
+      <textarea id="postBody" rows="10"
+                class="w-full mb-6 px-3 py-2 rounded border border-dark-line bg-dark-bg text-dark-text"
+                placeholder="Write something..."></textarea>
+      <div class="flex items-center justify-end gap-3">
+        <button id="cancelPost"
+                class="px-3 py-2 rounded border border-dark-line text-dark-muted hover:text-dark-text hover:bg-dark-bg">
+          Cancel
+        </button>
+        <button id="publishPost"
+                class="px-4 py-2 rounded bg-dark-accent text-black font-semibold hover:opacity-90">
+          Publish
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
