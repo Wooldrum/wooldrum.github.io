@@ -1,17 +1,17 @@
-/* Woodrum Admin Theme — dark, soft, modern
-   Drop this in /admin/admin.css
+/* Woodrum Admin Theme v2 — softer contrast, fully-themed MUI/Decap controls
+   Save as /admin/admin.css
 */
 
 :root{
-  /* Same palette as the site, but slightly softened */
-  --bg:           #0b1225;   /* page background */
-  --panel:        #0e1730;   /* cards / sidebars */
-  --panel-2:      #111c3a;   /* elevated panel */
-  --line:         #22345b;   /* subtle borders */
-  --text:         #e7efff;
-  --muted:        #a5b8e6;
-  --accent:       #59a3ff;
-  --accent-900:   #2e7ad8;
+  /* Softer palette */
+  --bg:         #0b1225;
+  --panel:      #0e1730;
+  --panel-2:    #101a36;
+  --line:       #22345b;
+  --text:       #e7efff;
+  --muted:      #a5b8e6;
+  --accent:     #59a3ff;
+  --accent-900: #2e7ad8;
 
   --radius: 14px;
   --radius-sm: 10px;
@@ -22,16 +22,18 @@
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
+
 html, body {
-  background: radial-gradient(60% 80% at 10% -10%, rgba(89,163,255,.10), transparent 40%),
-              radial-gradient(40% 60% at 110% 10%, rgba(89,163,255,.08), transparent 50%),
-              var(--bg);
+  background:
+    radial-gradient(60% 80% at 10% -10%, rgba(89,163,255,.08), transparent 40%),
+    radial-gradient(40% 60% at 110% 10%, rgba(89,163,255,.06), transparent 50%),
+    var(--bg);
   color: var(--text);
   font-family: 'IBM Plex Mono', monospace;
   color-scheme: dark;
 }
 
-/* Root app containers */
+/* Root containers */
 #nc-root, .nc-app, [data-testid="app"], [data-testid="root"] {
   background: transparent !important;
   color: var(--text) !important;
@@ -44,6 +46,7 @@ html, body {
   backdrop-filter: saturate(140%) blur(6px);
   box-shadow: var(--shadow-1);
 }
+[class*="AppHeader"] * { font-size: 14px !important; }
 
 /* Sidebar / Collections */
 [class*="Sidebar"], [data-testid="sidebar"], [class*="CollectionContainer"] {
@@ -64,21 +67,17 @@ html, body {
   border-radius: var(--radius) !important;
   box-shadow: none !important;
 }
-[class*="EntryCard"]:hover {
-  border-color: var(--accent) !important;
-}
+[class*="EntryCard"]:hover { border-color: var(--accent) !important; }
 
-/* Editor scaffolding (center + preview panes) */
-[class*="Editor"], [data-testid="editor"] {
-  background: transparent !important;
-}
-[class*="EditorPane"], [data-testid="editor-pane"] {
-  background: var(--bg) !important;
-}
+/* Editor / Preview layout */
+[class*="Editor"], [data-testid="editor"] { background: transparent !important; }
+[class*="EditorPane"], [data-testid="editor-pane"] { background: var(--bg) !important; }
 [class*="PreviewPane"], [data-testid="preview-pane"] {
   background: var(--panel) !important;
   border-left: 1px solid var(--line) !important;
 }
+/* Split resizer line */
+[class*="Resizer"] { background: var(--line) !important; opacity: .35 !important; }
 
 /* Form fields */
 input, textarea, select {
@@ -94,8 +93,11 @@ input:focus, textarea:focus, select:focus {
   border-color: var(--accent) !important;
   box-shadow: var(--ring) !important;
 }
+label, small, .hint, .description, [class*="Subtle"], [data-testid="field-hint"] {
+  color: var(--muted) !important;
+}
 
-/* Rich text / CodeMirror dark */
+/* Rich text / CodeMirror */
 [class*="RichTextEditor"], .CodeMirror, .cm-s-default {
   background: #0b1631 !important;
   color: var(--text) !important;
@@ -106,68 +108,93 @@ input:focus, textarea:focus, select:focus {
 .CodeMirror-cursor  { border-left: 2px solid var(--accent) !important; }
 .CodeMirror-selected{ background: rgba(89,163,255,.25) !important; }
 
-/* Labels / help text */
-label, small, .hint, .description, [class*="Subtle"], [data-testid="field-hint"] {
-  color: var(--muted) !important;
+/* === Toolbars & chips (the previous "too white/blue" bits) === */
+[class*="Toolbar"], [data-testid="toolbar"] {
+  background: var(--panel-2) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm) !important;
 }
+[class*="Toolbar"] button,
+[class*="Toolbar"] [role="button"] {
+  background: transparent !important;
+  color: var(--muted) !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+}
+[class*="Toolbar"] button:hover { background: rgba(255,255,255,.06) !important; color: var(--text) !important; }
 
-/* Buttons (primary + secondary + icon) */
+/* MUI buttons */
 button, [role="button"], .Button, .nc-button, .nc-btn, .MuiButton-root {
   border-radius: var(--radius-sm) !important;
   border: 1px solid transparent !important;
   box-shadow: none !important;
   font-weight: 600 !important;
 }
-
-/* Primary action */
-button[class*="primary"], .Button--primary, .MuiButton-containedPrimary,
-.nc-button-primary, .nc-btn-primary {
+.MuiButton-containedPrimary,
+button[class*="primary"], .Button--primary, .nc-button-primary, .nc-btn-primary {
   background: linear-gradient(180deg, var(--accent), var(--accent-900)) !important;
   color: #000 !important;
-  border-color: transparent !important;
 }
-button[class*="primary"]:hover,
-.Button--primary:hover, .MuiButton-containedPrimary:hover,
-.nc-button-primary:hover, .nc-btn-primary:hover { filter: brightness(1.05); }
-
-/* Secondary / ghost */
-button[class*="secondary"], .Button--secondary, .nc-btn-default,
-.MuiButton-outlined, .MuiButton-text {
+.MuiButton-containedPrimary:hover,
+button[class*="primary"]:hover { filter: brightness(1.05) !important; }
+.MuiButton-outlined, .Button--secondary, .nc-btn-default {
   background: var(--panel) !important;
   color: var(--text) !important;
   border-color: var(--line) !important;
 }
-button[class*="secondary"]:hover,
-.Button--secondary:hover, .MuiButton-outlined:hover,
-.MuiButton-text:hover { border-color: var(--accent) !important; }
+.MuiButton-outlined:hover, .Button--secondary:hover { border-color: var(--accent) !important; }
 
-/* Icon-only buttons & toggles */
-[class*="IconButton"], .MuiIconButton-root {
-  color: var(--muted) !important;
-  background: transparent !important;
-}
-[class*="IconButton"]:hover, .MuiIconButton-root:hover {
+/* Chips (e.g., “Now”, “Clear”, status pills) */
+.MuiChip-root {
+  background: var(--panel-2) !important;
   color: var(--text) !important;
-  background: rgba(255,255,255,.04) !important;
-  border-radius: 10px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
 }
+.MuiChip-root:hover { border-color: var(--accent) !important; }
+.MuiChip-deleteIcon, .MuiChip-icon { color: var(--muted) !important; }
 
-/* Dropdowns / menus / popovers */
-[class*="Menu"], [role="menu"], .MuiPaper-root {
+/* Toggles, switches, radio */
+.MuiSwitch-track { background-color: var(--line) !important; }
+.MuiSwitch-thumb  { background-color: var(--accent) !important; }
+.Mui-checked + .MuiSwitch-track { background-color: rgba(89,163,255,.4) !important; }
+
+/* Menus / popovers / dropdowns */
+.MuiPaper-root, [role="menu"], [class*="Menu"] {
   background: var(--panel-2) !important;
   color: var(--text) !important;
   border: 1px solid var(--line) !important;
   border-radius: var(--radius) !important;
   box-shadow: var(--shadow-1) !important;
 }
+.MuiMenuItem-root { color: var(--text) !important; }
+.MuiMenuItem-root:hover { background: rgba(255,255,255,.06) !important; }
+
+/* Select controls */
+.MuiOutlinedInput-root, .MuiSelect-outlined {
+  background: #0b1631 !important;
+  color: var(--text) !important;
+  border-color: var(--line) !important;
+  border-radius: var(--radius-sm) !important;
+}
+.MuiOutlinedInput-notchedOutline { border-color: var(--line) !important; }
+.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: var(--accent) !important; }
+
+/* Tabs */
+.MuiTabs-root { border-bottom: 1px solid var(--line) !important; }
+.MuiTab-root  { color: var(--muted) !important; }
+.Mui-selected { color: var(--text) !important; }
 
 /* Toasts / alerts */
-[class*="Snackbar"], [role="alert"] {
+[role="alert"], [class*="Snackbar"] {
   background: var(--panel-2) !important;
   color: var(--text) !important;
   border: 1px solid var(--line) !important;
   border-radius: var(--radius) !important;
 }
+
+/* Media library */
+[data-testid="media-library"], [class*="MediaLibrary"]{ background: var(--panel) !important; }
 
 /* Links */
 a { color: var(--accent) !important; text-decoration: none; }
@@ -177,11 +204,3 @@ a:hover { text-decoration: underline; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
 *::-webkit-scrollbar-track { background: transparent; }
-
-/* Compact header text */
-[class*="AppHeader"] * { font-size: 14px !important; }
-
-/* Media library */
-[data-testid="media-library"], [class*="MediaLibrary"]{
-  background: var(--panel) !important;
-}
