@@ -1,4 +1,3 @@
-# wooldrum.github.io/admin/config.yml
 backend:
   name: github
   repo: wooldrum/wooldrum.github.io
@@ -12,16 +11,22 @@ logo_url: https://wooldrum.github.io/assets/images/channels4_profile.jpg
 media_folder: "assets/images"
 public_folder: "/assets/images"
 
-publish_mode: simple  # direct commit to main
+publish_mode: simple
 
 collections:
   - name: "posts"
     label: "Posts"
     folder: "_posts"
     create: true
+    format: "frontmatter"
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    sortable_fields: ["date", "title"]
+    view_groups:
+      - label: "Year"
+        field: "date"
+        pattern: "YYYY"
     fields:
-      - {label: "Title", name: "title", widget: "string"}
-      - {label: "Publish Date", name: "date", widget: "datetime"}
-      - {label: "Hero Image", name: "image", widget: "image", required: false}
-      - {label: "Body", name: "body", widget: "markdown"}
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Publish Date", name: "date", widget: "datetime" }
+      - { label: "Hero Image", name: "image", widget: "image", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
