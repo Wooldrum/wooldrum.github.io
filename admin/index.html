@@ -9,12 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Theme + Preview -->
   <link rel="stylesheet" href="/admin/admin.css?v=3">
   <link rel="stylesheet" href="/admin/preview.css?v=2">
 </head>
 <body>
-  <!-- Decap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
   <script>
@@ -28,7 +26,18 @@
       html,body,#root,#nc-root,.nc-app { background:#0b1225 !important; color:#e7efff !important; }
       #root>div,#root>div>div { background:#0b1225 !important; }
       .MuiContainer-root,.MuiBox-root,.MuiGrid-root,.MuiStack-root { background:transparent !important; }
-      .MuiPaper-root,.MuiPopover-paper,.MuiDrawer-paper,.MuiMenu-paper { background:#101a36 !important; border:1px solid #22345b !important; color:#e7efff !important; }
+
+      /* General rule for cards and papers using the new lighter color */
+      .MuiPaper-root, .MuiPopover-paper, .MuiDrawer-paper, .MuiMenu-paper, .MuiCard-root {
+        background-color: #1c2744 !important;
+        border: 1px solid #22345b !important;
+        color: #e7efff !important;
+      }
+
+      /* And a highly specific override to kill the white boxes in the post list */
+      #root [data-testid="collection-container"] .MuiPaper-root {
+        background-color: #1c2744 !important;
+      }
     `;
     document.head.appendChild(s);
   </script>
