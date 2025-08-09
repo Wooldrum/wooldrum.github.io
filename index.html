@@ -34,7 +34,9 @@
 
   <style>
     body { font-family: 'IBM Plex Mono', monospace; }
+    /* Blog-only view */
     body.blog-mode #about { display: none; }
+    /* allow sticky elements to work */
     html, body { overflow: visible; }
     .prose :where(a){ text-decoration: underline; }
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
@@ -49,31 +51,33 @@
     <!-- LEFT RAIL -->
     <aside class="w-full md:w-40 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
-        <!-- PFP (click for dropdown) -->
-        <div class="h-44 border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
-          <button id="pfpToggle" class="block rounded-full outline-none focus:ring-2 focus:ring-dark-accent">
+        <!-- TOP TILE: PFP now square and fills the box on desktop -->
+        <div class="h-44 md:aspect-square border-b-2 border-dark-line flex-shrink-0 relative">
+          <button id="pfpToggle" class="absolute inset-0 block rounded-none outline-none focus:ring-2 focus:ring-dark-accent">
             <img
               src="/assets/images/channels4_profile.jpg"
               alt="Profile picture"
-              class="h-24 w-24 rounded-full object-fill border-2 border-dark-line hover:border-dark-accent transition-colors sticky top-2"
+              class="w-full h-full object-cover border-0 rounded-none"
             >
           </button>
         </div>
 
         <!-- Dropdown -->
         <div id="pfpMenu"
-             class="hidden absolute left-2 top-40 z-50 w-36 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
-          <a href="#" class="menu-item text-dark-muted">Placeholder 1</a>
-          <a href="#" class="menu-item text-dark-muted">Placeholder 2</a>
+             class="hidden absolute left-2 top-40 z-50 w-44 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
+          <a href="https://youtube.com/wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
+          <a href="https://discord.gg/WmZ5DVt5N2" target="_blank" rel="noopener" class="menu-item text-dark-muted">Discord</a>
+          <a href="https://github.com/Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">Github</a>
           <a href="/admin/login.html" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
         <!-- Buttons (fill boxes) -->
         <nav class="flex flex-row md:flex-col w-full">
-          <a href="#blog" data-nav="blog" title="Blog"
+          <!-- Renamed: Blog -> Cool stuff (still navigates to #blog) -->
+          <a href="#blog" data-nav="blog" title="Cool stuff"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Blog"
-                 alt="Blog Button" class="w-full h-full object-fill rounded block">
+            <img src="https://placehold.co/88x31/22345b/9fb2de?text=Cool+stuff"
+                 alt="Cool stuff Button" class="w-full h-full object-fill rounded block">
           </a>
 
           <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
@@ -82,14 +86,15 @@
                  alt="Zen Browser Button" class="w-full h-full object-fill rounded block">
           </a>
 
-          <!-- NEW: Windows 11 tile (clickable image) -->
+          <!-- (Optional) Windows 11 tile you added earlier can stay below or be removed if you want -->
+          <!--
           <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" title="Windows 11"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
-            <!-- Re-upload the file so it preserves the .png (see admin.js fix). Use this exact path/name: -->
             <img src="/assets/images/Windows_2021_print.png"
                  alt="Windows 2021 Print"
                  class="w-full h-full object-fill rounded block">
           </a>
+          -->
 
           <a href="#" title="Button 3"
              class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line hover:bg-dark-bg transition-colors">
@@ -107,11 +112,13 @@
 
     <!-- MAIN -->
     <main class="flex-1">
+      <!-- Header -->
       <header class="h-44 px-6 md:px-10 border-b-2 border-dark-line flex flex-col justify-center">
         <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
         <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
       </header>
 
+      <!-- About -->
       <section id="about" class="p-6 md:p-10 border-b-2 border-dark-line">
         <h2 class="text-3xl font-bold text-white mb-4">About Me</h2>
 
@@ -123,9 +130,10 @@
         </div>
       </section>
 
+      <!-- Blog / Cool stuff -->
       <section id="blog" class="p-6 md:p-10">
         <div class="flex items-center justify-between">
-          <h2 class="text-3xl font-bold text-white">Blog</h2>
+          <h2 class="text-3xl font-bold text-white">Cool stuff</h2>
         </div>
 
         <div class="mt-8 space-y-8">
