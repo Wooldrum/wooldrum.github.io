@@ -4,7 +4,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Woodrum's Page</title>
 
   <!-- Tailwind + Font -->
@@ -13,20 +13,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind config -->
   <script>
     tailwind.config = {
       theme: {
         extend: {
           spacing: { '44': '11rem' }, /* 176px */
           colors: {
-            'dark-bg':    '#0a1020',
+            'dark-bg': '#0a1020',
             'dark-panel': '#0d152b',
-            'dark-line':  '#22345b',
-            'dark-text':  '#e7efff',
+            'dark-line': '#22345b',
+            'dark-text': '#e7efff',
             'dark-muted': '#9fb2de',
-            'dark-accent':'#59a3ff',
-            'tile-bg':    '#111a33'    /* lighter dark for logo contrast */
+            'dark-accent': '#59a3ff',
+            /* slightly lighter panel to help transparent logos pop */
+            'dark-contrast': '#132343'
           }
         }
       }
@@ -34,54 +34,77 @@
   </script>
 
   <style>
-    :root{ --pfpH:176px; } /* share height so header rule aligns with sidebar */
-
+    :root{ --pfpH:176px; } /* shared height to align desktop header rule with sidebar */
     html, body { overflow: visible; }
     body { font-family: 'IBM Plex Mono', monospace; }
 
     /* Blog-only view hides About */
     body.blog-mode #about { display: none; }
 
-    /* Sidebar tiles (square corners) */
+    /* Sidebar tiles: square, fill box exactly */
     .tile-btn{
       position: relative;
-      height: 64px;               /* h-16 */
+      height: 64px; /* h-16 */
       overflow: hidden;
-      border-radius: 0;           /* square */
-      background: var(--tile-bg,#111a33);
+      background: #132343;            /* dark-contrast */
       display: block;
+      border-radius: 0;                /* square corners */
     }
     .tile-img{
       position:absolute; inset:0;
       width:100%; height:100%;
-      object-fit:cover;           /* default for most logos */
+      object-fit:fill;                 /* force exact fit (distort if needed) */
       display:block;
     }
-    /* Windows: stretch to fill box exactly */
-    .tile-windows .tile-img{ object-fit:fill; }
 
-    /* Dropdown items */
+    /* Menu dropdown items */
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
     .menu-item:hover { background:#0a1020; }
 
-    /* Keep header height synced to sidebar avatar block */
+    /* Keep header + sidebar rules aligned on desktop */
     .pfpH { height: var(--pfpH); }
 
-    /* True 1:1 on mobile avatar */
-    .aspect-square { aspect-ratio: 1 / 1; }
-
-    /* Mobile: hide sidebar; show compact icons row */
+    /* Mobile: hide sidebar; show compact icon strip; relax header height */
     @media (max-width: 767px){
       #leftRail { display:none; }
       #mobileCool { display:flex; }
+      .pfpH { height:auto; }
     }
 
-    /* Hide scrollbar but allow swipe */
-    .scrollbar-none::-webkit-scrollbar{ display:none; }
-    .scrollbar-none{ -ms-overflow-style:none; scrollbar-width:none; }
+    /* iOS safe-area for the header */
+    header.safe-top{
+      padding-top: env(safe-area-inset-top);
+      padding-top: constant(safe-area-inset-top);
+    }
+
+    /* Mobile icon strip styling */
+    #mobileCool{
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      gap:.75rem;
+    }
+    /* hide scrollbar (keeps scrollability) */
+    #mobileCool::-webkit-scrollbar{ display:none; }
+    #mobileCool{ scrollbar-width:none; }
+
+    .micon{
+      position:relative;
+      flex:0 0 auto;
+      width:6rem;   /* ~96px */
+      height:3rem;  /* ~48px */
+      border:1px solid #22345b;
+      background:#132343; /* contrast bg */
+      overflow:hidden;
+    }
+    .micon img{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:fill; /* same ‘fill box exactly’ behavior */
+      display:block;
+    }
   </style>
 
-  <!-- About loader libs -->
+  <!-- libs for About rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
@@ -91,17 +114,17 @@
 
   <div class="flex flex-col md:flex-row min-h-screen">
 
-    <!-- LEFT RAIL (desktop) -->
+    <!-- LEFT RAIL (desktop only) -->
     <aside id="leftRail" class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
 
-        <!-- PFP (dropdown trigger) -->
+        <!-- PFP (click = dropdown) -->
         <div class="pfpH border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
-          <button id="pfpToggle" class="outline-none focus:ring-2 focus:ring-dark-accent">
+          <button id="pfpToggle" class="rounded-xl outline-none focus:ring-2 focus:ring-dark-accent">
             <img
               src="/assets/images/channels4_profile.jpg"
               alt="Profile picture"
-              class="w-36 h-36 aspect-square object-cover rounded-xl border-2 border-dark-line hover:border-dark-accent transition-colors"
+              class="w-36 h-36 rounded-xl object-cover border-2 border-dark-line hover:border-dark-accent transition-colors"
             >
           </button>
         </div>
@@ -115,54 +138,56 @@
           <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
-        <!-- Sidebar label + tiles (order from your folder view) -->
-        <nav class="flex flex-row md:flex-col w-full">
-          <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
-            <span class="text-lg font-semibold text-dark-text">Cool stuff</span>
-          </div>
+        <!-- Sidebar label (desktop only) -->
+        <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
+          <span class="text-lg font-semibold text-dark-text">Cool stuff</span>
+        </div>
 
+        <!-- ORDERED TILES (square, fill exactly) -->
+        <nav class="flex flex-row md:flex-col w-full">
           <!-- Windows -->
           <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
-             class="tile-btn tile-windows w-full border-b-2 border-dark-line">
+             class="tile-btn w-full border-b-2 border-dark-line">
             <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="tile-img">
           </a>
+
           <!-- Focusrite -->
-          <a href="https://focusrite.com" target="_blank" rel="noopener"
-             class="tile-btn w-full border-b-2 border-dark-line">
+          <a href="#" class="tile-btn w-full border-b-2 border-dark-line">
             <img src="/assets/images/focusrite.png" alt="Focusrite" class="tile-img">
           </a>
+
           <!-- Intel -->
-          <a href="https://www.intel.com" target="_blank" rel="noopener"
-             class="tile-btn w-full border-b-2 border-dark-line">
+          <a href="#" class="tile-btn w-full border-b-2 border-dark-line">
             <img src="/assets/images/intel.png" alt="Intel" class="tile-img">
           </a>
+
           <!-- Logitech -->
-          <a href="https://www.logitech.com" target="_blank" rel="noopener"
-             class="tile-btn w-full border-b-2 border-dark-line">
+          <a href="#" class="tile-btn w-full border-b-2 border-dark-line">
             <img src="/assets/images/logitech.png" alt="Logitech" class="tile-img">
           </a>
+
           <!-- Lunar Client -->
-          <a href="https://www.lunarclient.com" target="_blank" rel="noopener"
-             class="tile-btn w-full border-b-2 border-dark-line">
+          <a href="#" class="tile-btn w-full border-b-2 border-dark-line">
             <img src="/assets/images/lunarclient.png" alt="Lunar Client" class="tile-img">
           </a>
-          <!-- NVIDIA -->
-          <a href="https://www.nvidia.com" target="_blank" rel="noopener"
-             class="tile-btn w-full border-b-2 border-dark-line">
+
+          <!-- Nvidia -->
+          <a href="#" class="tile-btn w-full border-b-2 border-dark-line">
             <img src="/assets/images/nvidia.png" alt="NVIDIA" class="tile-img">
           </a>
+
           <!-- Shure -->
-          <a href="https://www.shure.com" target="_blank" rel="noopener"
-             class="tile-btn w-full border-b-2 border-dark-line">
+          <a href="#" class="tile-btn w-full border-b-2 border-dark-line">
             <img src="/assets/images/shure.png" alt="Shure" class="tile-img">
           </a>
-          <!-- Zen Browser -->
+
+          <!-- Zen -->
           <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
              class="tile-btn w-full border-b-2 border-dark-line">
             <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="tile-img">
           </a>
 
-          <!-- Extra placeholders with identical spacing -->
+          <!-- Placeholders -->
           <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
             <span class="text-xl text-dark-muted">Button 5</span>
           </div>
@@ -175,62 +200,49 @@
 
     <!-- MAIN -->
     <main class="flex-1">
-      <!-- Header (aligned to pfp height) -->
-      <header class="pfpH px-4 sm:px-6 md:px-10 border-b-2 border-dark-line flex items-center">
-        <!-- Mobile, with tappable avatar -->
-        <div class="flex items-center gap-3 md:hidden">
-          <button id="pfpToggleMobile" class="outline-none">
-            <img src="/assets/images/channels4_profile.jpg" alt="Profile picture"
-                 class="h-10 w-10 aspect-square object-cover rounded-lg border border-dark-line">
-          </button>
-          <div>
+      <!-- Header (desktop aligns with sidebar; mobile auto height and safe top) -->
+      <header class="pfpH safe-top px-6 md:px-10 border-b-2 border-dark-line flex items-center">
+        <!-- Mobile header -->
+        <div class="flex items-center gap-4 md:hidden">
+          <img src="/assets/images/channels4_profile.jpg" alt="Profile picture"
+               class="h-10 w-10 rounded-lg border border-dark-line">
+          <div class="min-w-0">
             <h1 class="text-2xl font-bold text-white">Woodrum's Page</h1>
             <p class="text-sm text-dark-muted -mt-1">Welcome to my personal corner of the internet.</p>
           </div>
         </div>
-        <!-- Desktop -->
+        <!-- Desktop header -->
         <div class="hidden md:block">
           <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
           <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
         </div>
       </header>
 
-      <!-- Mobile swipe bar (same order as desktop) -->
-      <div id="mobileCool"
-           class="hidden px-4 py-3 border-b-2 border-dark-line gap-3 overflow-x-auto whitespace-nowrap scrollbar-none snap-x snap-mandatory">
-        <span class="inline-flex items-center justify-center h-12 px-3 border border-dark-line bg-dark-panel rounded-md text-dark-text snap-start">Cool stuff</span>
-
-        <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
-           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
-          <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="absolute inset-0 w-full h-full object-fill">
+      <!-- MOBILE ICON STRIP (no "Cool stuff" label, horizontally scrollable) -->
+      <div id="mobileCool" class="hidden px-3 py-3 border-b-2 border-dark-line">
+        <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" class="micon">
+          <img src="/assets/images/Windows_2021_print.png" alt="Windows 11">
         </a>
-        <a href="https://focusrite.com" target="_blank" rel="noopener"
-           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
-          <img src="/assets/images/focusrite.png" alt="Focusrite" class="absolute inset-0 w-full h-full object-cover">
+        <a href="#" class="micon">
+          <img src="/assets/images/focusrite.png" alt="Focusrite">
         </a>
-        <a href="https://www.intel.com" target="_blank" rel="noopener"
-           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
-          <img src="/assets/images/intel.png" alt="Intel" class="absolute inset-0 w-full h-full object-cover">
+        <a href="#" class="micon">
+          <img src="/assets/images/intel.png" alt="Intel">
         </a>
-        <a href="https://www.logitech.com" target="_blank" rel="noopener"
-           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
-          <img src="/assets/images/logitech.png" alt="Logitech" class="absolute inset-0 w-full h-full object-cover">
+        <a href="#" class="micon">
+          <img src="/assets/images/logitech.png" alt="Logitech">
         </a>
-        <a href="https://www.lunarclient.com" target="_blank" rel="noopener"
-           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
-          <img src="/assets/images/lunarclient.png" alt="Lunar Client" class="absolute inset-0 w-full h-full object-cover">
+        <a href="#" class="micon">
+          <img src="/assets/images/lunarclient.png" alt="Lunar Client">
         </a>
-        <a href="https://www.nvidia.com" target="_blank" rel="noopener"
-           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
-          <img src="/assets/images/nvidia.png" alt="NVIDIA" class="absolute inset-0 w-full h-full object-cover">
+        <a href="#" class="micon">
+          <img src="/assets/images/nvidia.png" alt="NVIDIA">
         </a>
-        <a href="https://www.shure.com" target="_blank" rel="noopener"
-           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
-          <img src="/assets/images/shure.png" alt="Shure" class="absolute inset-0 w-full h-full object-cover">
+        <a href="#" class="micon">
+          <img src="/assets/images/shure.png" alt="Shure">
         </a>
-        <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
-           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
-          <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="absolute inset-0 w-full h-full object-cover">
+        <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" class="micon">
+          <img src="/assets/images/zen-browser.png" alt="Zen Browser">
         </a>
       </div>
 
@@ -240,7 +252,7 @@
         <div id="aboutBody" class="text-dark-muted leading-relaxed max-w-prose">Loading...</div>
       </section>
 
-      <!-- Blog list -->
+      <!-- Blog -->
       <section id="blog" class="p-6 md:p-10">
         <h2 class="text-3xl font-bold text-white mb-2">My Blog</h2>
 
@@ -261,7 +273,7 @@
                   <img src="{{ post.image | relative_url }}" alt="" class="mt-4 rounded border border-dark-line">
                 {% endif %}
                 <div class="mt-3 text-dark-muted leading-relaxed max-w-prose">
-                  {{ post.excerpt }}
+                  {{ post.content | markdownify | strip_html | truncatewords: 120 }}
                 </div>
                 <div class="mt-2">
                   <a href="{{ post.url | relative_url }}" class="text-dark-accent underline">Read more →</a>
@@ -275,22 +287,32 @@
   </div>
 
   <script>
-    // Make dropdown work on desktop & mobile avatar
-    (function(){
+    // Load About from /assets/content/about.md
+    (async () => {
+      try {
+        const res = await fetch('/assets/content/about.md', { cache: 'no-store' });
+        if (!res.ok) throw new Error('fail');
+        const md = await res.text();
+        document.getElementById('aboutBody').innerHTML = DOMPurify.sanitize(marked.parse(md));
+      } catch {
+        document.getElementById('aboutBody').textContent = "Couldn't load About.";
+      }
+    })();
+
+    // PFP dropdown (desktop + mobile tap)
+    (function () {
+      const btn = document.getElementById('pfpToggle');
       const menu = document.getElementById('pfpMenu');
-      const desk = document.getElementById('pfpToggle');
-      const mob  = document.getElementById('pfpToggleMobile');
-      function toggle(e){ e?.preventDefault?.(); menu.classList.toggle('hidden'); }
-      function away(e){
-        if(!menu.classList.contains('hidden') &&
-           !menu.contains(e.target) && e.target !== desk && e.target !== mob){
+      if (!btn || !menu) return;
+      const toggle = (e)=>{ e.stopPropagation(); menu.classList.toggle('hidden'); };
+      btn.addEventListener('click', toggle);
+      btn.addEventListener('touchend', toggle);
+      document.addEventListener('click', e=>{
+        if (!menu.classList.contains('hidden') && !menu.contains(e.target) && e.target!==btn) {
           menu.classList.add('hidden');
         }
-      }
-      desk?.addEventListener('click', toggle);
-      mob?.addEventListener('click', toggle);
-      document.addEventListener('click', away);
-    })();
+      });
+    }());
   </script>
 </body>
 </html>
