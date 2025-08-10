@@ -93,7 +93,6 @@
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
-  <!-- One JS file handles About + both dropdowns -->
   <script defer src="/assets/main.js"></script>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
@@ -192,7 +191,7 @@
         <div class="flex items-center gap-4 md:hidden">
           <button id="pfpToggleMobile" class="rounded-lg outline-none focus:ring-2 focus:ring-dark-accent">
             <img src="/assets/images/channels4_profile.jpg" alt="Profile picture"
-                 class="h-10 w-10 aspect-square object-cover object-center rounded-lg border border-dark-line">
+                 class="h-10 w-10 rounded-lg border border-dark-line">
           </button>
           <div class="min-w-0">
             <h1 class="text-2xl font-bold text-white">Woodrum's Page</h1>
@@ -270,5 +269,46 @@
       </section>
     </main>
   </div>
+
+  <script>
+    // Load About content
+    (async () => {
+      try {
+        const res = await fetch('/assets/content/about.md', { cache: 'no-store' });
+        if (!res.ok) throw new Error('fail');
+        const md = await res.text();
+        document.getElementById('aboutBody').innerHTML = DOMPurify.sanitize(marked.parse(md));
+      } catch {
+        document.getElementById('aboutBody').textContent = "Couldn't load About.";
+      }
+    })();
+
+    // Dropdowns: desktop + mobile
+    (function () {
+      const desktopBtn  = document.getElementById('pfpToggle');
+      const desktopMenu = document.getElementById('pfpMenu');
+      const mobileBtn   = document.getElementById('pfpToggleMobile');
+      const mobileMenu  = document.getElementById('pfpMenuMobile');
+
+      const toggle = (menu) => menu && menu.classList.toggle('hidden');
+      const hide   = (menu) => menu && menu.classList.add('hidden');
+
+      if (desktopBtn && desktopMenu) {
+        const on = (e)=>{ e.stopPropagation(); toggle(desktopMenu); hide(mobileMenu); };
+        desktopBtn.addEventListener('click', on);
+        desktopBtn.addEventListener('touchend', on);
+      }
+      if (mobileBtn && mobileMenu) {
+        const on = (e)=>{ e.stopPropagation(); toggle(mobileMenu); hide(desktopMenu); };
+        mobileBtn.addEventListener('click', on);
+        mobileBtn.addEventListener('touchend', on);
+      }
+
+      document.addEventListener('click', (e)=>{
+        if (desktopMenu && !desktopMenu.contains(e.target) && e.target !== desktopBtn) hide(desktopMenu);
+        if (mobileMenu  && !mobileMenu.contains(e.target)  && e.target !== mobileBtn)  hide(mobileMenu);
+      });
+    }());
+  </script>
 </body>
 </html>
