@@ -143,7 +143,7 @@
         <div class="flex items-center gap-4 md:hidden">
           <button id="pfpToggleMobile" class="rounded-lg outline-none focus:ring-2 focus:ring-dark-accent">
             <img src="{{ '/assets/images/channels4_profile.jpg' | relative_url }}" alt="Profile picture"
-                 class="h-10 w-10 rounded-lg border border-dark-line">
+                 class="h-10 w-10 aspect-square object-cover object-center rounded-lg border border-dark-line">
           </button>
           <div class="min-w-0">
             <a href="{{ '/' | relative_url }}#blog" class="text-dark-accent underline whitespace-nowrap">&larr; Back</a>
@@ -196,34 +196,5 @@
       </article>
     </main>
   </div>
-
-  <script>
-    // Dropdowns: desktop + mobile
-    (function () {
-      const desktopBtn  = document.getElementById('pfpToggle');
-      const desktopMenu = document.getElementById('pfpMenu');
-      const mobileBtn   = document.getElementById('pfpToggleMobile');
-      const mobileMenu  = document.getElementById('pfpMenuMobile');
-
-      const toggle = (menu) => menu && menu.classList.toggle('hidden');
-      const hide   = (menu) => menu && menu.classList.add('hidden');
-
-      if (desktopBtn && desktopMenu) {
-        const on = (e)=>{ e.stopPropagation(); toggle(desktopMenu); hide(mobileMenu); };
-        desktopBtn.addEventListener('click', on);
-        desktopBtn.addEventListener('touchend', on);
-      }
-      if (mobileBtn && mobileMenu) {
-        const on = (e)=>{ e.stopPropagation(); toggle(mobileMenu); hide(desktopMenu); };
-        mobileBtn.addEventListener('click', on);
-        mobileBtn.addEventListener('touchend', on);
-      }
-
-      document.addEventListener('click', (e)=>{
-        if (desktopMenu && !desktopMenu.contains(e.target) && e.target !== desktopBtn) hide(desktopMenu);
-        if (mobileMenu  && !mobileMenu.contains(e.target)  && e.target !== mobileBtn)  hide(mobileMenu);
-      });
-    }());
-  </script>
 </body>
 </html>
