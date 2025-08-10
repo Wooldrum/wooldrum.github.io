@@ -5,24 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ page.title }} — Woodrum's Page</title>
 
-  <!-- Tailwind (CDN) + font -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          spacing: { '44': '11rem' }, /* 176px */
+          spacing: { '44': '11rem' },
           colors: {
-            'dark-bg': '#0a1020',
-            'dark-panel': '#0d152b',
-            'dark-line': '#22345b',
-            'dark-text': '#e7efff',
-            'dark-muted': '#9fb2de',
-            'dark-accent': '#59a3ff',
+            'dark-bg':'#0a1020','dark-panel':'#0d152b','dark-line':'#22345b',
+            'dark-text':'#e7efff','dark-muted':'#9fb2de','dark-accent':'#59a3ff',
+            'tile-bg':'#111a33'
           }
         }
       }
@@ -30,130 +22,123 @@
   </script>
 
   <style>
-    :root{ --pfpH:176px; }                 /* keep header rule aligned with sidebar */
+    :root{ --pfpH:176px; }
     html, body { overflow: visible; }
     body { font-family: 'IBM Plex Mono', monospace; }
 
-    /* Sidebar tiles (squared) */
-    .tile-btn{
-      position: relative;
-      height: 64px;               /* h-16 */
-      overflow: hidden;
-      background: #0d152b;
-      display: block;
-      border-radius: 0;           /* square corners */
-    }
-    .tile-img{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit:cover;           /* default: nice crop */
-      display:block;
-      border-radius:0;            /* square */
-    }
-    /* Force the Windows image to “squish” to fill exactly */
+    .tile-btn{ position:relative; height:64px; overflow:hidden; border-radius:0; background:var(--tile-bg,#111a33); display:block; }
+    .tile-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
     .tile-windows .tile-img{ object-fit:fill; }
 
-    /* Dropdown items */
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
     .menu-item:hover { background:#0a1020; }
-
-    /* Use the same shared height so the header border lines up with sidebar */
     .pfpH { height: var(--pfpH); }
+    .aspect-square{ aspect-ratio:1/1; }
 
-    /* Article body typography */
+    @media (max-width:767px){ #leftRail{display:none;} #mobileCool{display:flex;} #desktopHeader{display:none;} #mobileHeader{display:flex;} }
+    .scrollbar-none::-webkit-scrollbar{display:none;}
+    .scrollbar-none{-ms-overflow-style:none; scrollbar-width:none;}
+
+    /* Post body rules */
     .post-body { max-width: 70ch; }
     .post-body p { color: #9fb2de; margin: .9rem 0; }
     .post-body h1, .post-body h2, .post-body h3 { color: #ffffff; margin: 1.25rem 0 .5rem; }
     .post-body a { color: #59a3ff; text-decoration: underline; }
     .post-body img { max-width: 100%; border: 1px solid #22345b; border-radius: 12px; margin: 1rem 0; }
-    .post-body blockquote {
-      margin: 1rem 0; padding: .75rem 1rem;
-      border-left: 3px solid #59a3ff; background: #0d152b; color: #9fb2de; border-radius: 10px;
-    }
-    .post-body code { background: #0d152b; border: 1px solid #22345b; padding: .15rem .35rem; border-radius: 8px; }
-    .post-body pre { background: #0d152b; border: 1px solid #22345b; color: #e7efff; padding: 1rem; border-radius: 12px; overflow: auto; }
-
-    /* Mobile: hide sidebar; show compact row of tiles and small pfp in header */
-    @media (max-width: 767px){
-      #leftRail { display:none; }
-      #mobileCool { display:flex; }
-      #desktopHeader { display:none; }
-      #mobileHeader { display:flex; }
-    }
+    .post-body blockquote { margin:1rem 0; padding:.75rem 1rem; border-left:3px solid #59a3ff; background:#0d152b; color:#9fb2de; border-radius:10px; }
+    .post-body code { background:#0d152b; border:1px solid #22345b; padding:.15rem .35rem; border-radius:8px; }
+    .post-body pre { background:#0d152b; border:1px solid #22345b; color:#e7efff; padding:1rem; border-radius:12px; overflow:auto; }
   </style>
 
-  <!-- Your dropdown/behavior script -->
-  <script defer src="{{ '/assets/main.js' | relative_url }}"></script>
+  <script defer src="/assets/main.js"></script>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
-
   <div class="flex flex-col md:flex-row min-h-screen">
 
-    <!-- LEFT RAIL (desktop only) -->
+    <!-- LEFT RAIL (same as home) -->
     <aside id="leftRail" class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
 
-        <!-- PFP (click = dropdown) -->
         <div class="pfpH border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
-          <button id="pfpToggle" class="rounded-xl outline-none focus:ring-2 focus:ring-dark-accent">
-            <img
-              src="{{ '/assets/images/channels4_profile.jpg' | relative_url }}"
-              alt="Profile picture"
-              class="w-36 h-36 rounded-xl object-cover border-2 border-dark-line hover:border-dark-accent transition-colors"
-            >
+          <button id="pfpToggle" class="outline-none focus:ring-2 focus:ring-dark-accent">
+            <img src="/assets/images/channels4_profile.jpg" alt="Profile picture"
+                 class="w-36 h-36 aspect-square object-cover rounded-xl border-2 border-dark-line hover:border-dark-accent transition-colors">
           </button>
         </div>
 
-        <!-- Dropdown (same links as home) -->
         <div id="pfpMenu"
              class="hidden absolute left-2 top-[170px] z-50 w-40 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
           <a href="https://youtube.com/wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
           <a href="https://discord.gg/WmZ5DVt5N2" target="_blank" rel="noopener" class="menu-item text-dark-muted">Discord</a>
           <a href="https://github.com/Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">GitHub</a>
-          <a href="{{ '/admin/' | relative_url }}" class="menu-item text-dark-accent font-semibold">Admin</a>
+          <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
-        <!-- Sidebar labels + tiles (square) -->
         <nav class="flex flex-row md:flex-col w-full">
-          <!-- “Blog” label (not a link) -->
           <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
             <span class="text-lg font-semibold text-dark-text">Cool stuff</span>
           </div>
 
-          <!-- Zen tile -->
-          <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
-             class="tile-btn w-full border-b-2 border-dark-line">
-            <img src="{{ '/assets/images/zen-browser.png' | relative_url }}" alt="Zen Browser" class="tile-img">
-          </a>
-
-          <!-- Windows tile (squish to fill) -->
-          <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" title="Windows 11"
+          <!-- Windows -> Focusrite -> Intel -> Logitech -> Lunar Client -> NVIDIA -> Shure -> Zen -->
+          <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
              class="tile-btn tile-windows w-full border-b-2 border-dark-line">
-            <img src="{{ '/assets/images/Windows_2021_print.png' | relative_url }}" alt="Windows 11" class="tile-img">
+            <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="tile-img">
+          </a>
+          <a href="https://focusrite.com" target="_blank" rel="noopener"
+             class="tile-btn w-full border-b-2 border-dark-line">
+            <img src="/assets/images/focusrite.png" alt="Focusrite" class="tile-img">
+          </a>
+          <a href="https://www.intel.com" target="_blank" rel="noopener"
+             class="tile-btn w-full border-b-2 border-dark-line">
+            <img src="/assets/images/intel.png" alt="Intel" class="tile-img">
+          </a>
+          <a href="https://www.logitech.com" target="_blank" rel="noopener"
+             class="tile-btn w-full border-b-2 border-dark-line">
+            <img src="/assets/images/logitech.png" alt="Logitech" class="tile-img">
+          </a>
+          <a href="https://www.lunarclient.com" target="_blank" rel="noopener"
+             class="tile-btn w-full border-b-2 border-dark-line">
+            <img src="/assets/images/lunarclient.png" alt="Lunar Client" class="tile-img">
+          </a>
+          <a href="https://www.nvidia.com" target="_blank" rel="noopener"
+             class="tile-btn w-full border-b-2 border-dark-line">
+            <img src="/assets/images/nvidia.png" alt="NVIDIA" class="tile-img">
+          </a>
+          <a href="https://www.shure.com" target="_blank" rel="noopener"
+             class="tile-btn w-full border-b-2 border-dark-line">
+            <img src="/assets/images/shure.png" alt="Shure" class="tile-img">
+          </a>
+          <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
+             class="tile-btn w-full border-b-2 border-dark-line">
+            <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="tile-img">
           </a>
 
-          <!-- Placeholder tile -->
+          <!-- Same extra placeholders -->
           <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
-            <span class="text-xl text-dark-muted">Button 4</span>
+            <span class="text-xl text-dark-muted">Button 5</span>
+          </div>
+          <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
+            <span class="text-xl text-dark-muted">Button 6</span>
           </div>
         </nav>
       </div>
     </aside>
 
-    <!-- MAIN -->
+    <!-- POST -->
     <main class="flex-1">
-      <!-- Header (aligns with pfp block) -->
       <header class="pfpH px-6 md:px-10 border-b-2 border-dark-line flex items-center">
-        <!-- Mobile compact header -->
+        <!-- Mobile header -->
         <div id="mobileHeader" class="hidden items-center gap-4">
-          <img src="{{ '/assets/images/channels4_profile.jpg' | relative_url }}" alt="Profile picture" class="h-10 w-10 rounded-lg border border-dark-line">
+          <button id="pfpToggleMobile" class="outline-none">
+            <img src="/assets/images/channels4_profile.jpg" alt="Profile picture"
+                 class="h-10 w-10 aspect-square object-cover rounded-lg border border-dark-line">
+          </button>
           <div class="min-w-0">
             <a href="{{ '/' | relative_url }}#blog" class="text-dark-accent underline whitespace-nowrap">&larr; Back</a>
             <h1 class="text-2xl font-bold text-white mt-1 truncate">{{ page.title }}</h1>
             <p class="text-sm text-dark-muted -mt-1">{{ page.date | date: "%B %-d, %Y" }}</p>
           </div>
         </div>
-
         <!-- Desktop header -->
         <div id="desktopHeader" class="block">
           <a href="{{ '/' | relative_url }}#blog" class="text-dark-accent underline">&larr; Back</a>
@@ -162,19 +147,45 @@
         </div>
       </header>
 
-      <!-- Mobile compact “cool stuff” row (replaces sidebar) -->
-      <div id="mobileCool" class="hidden p-3 gap-3 border-b-2 border-dark-line">
-        <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
-           class="relative w-24 h-12 overflow-hidden border border-dark-line">
-          <img src="{{ '/assets/images/zen-browser.png' | relative_url }}" alt="Zen Browser" class="absolute inset-0 w-full h-full object-cover">
-        </a>
+      <!-- Mobile swipe bar (same order) -->
+      <div id="mobileCool"
+           class="hidden px-4 py-3 border-b-2 border-dark-line gap-3 overflow-x-auto whitespace-nowrap scrollbar-none snap-x snap-mandatory">
+        <span class="inline-flex items-center justify-center h-12 px-3 border border-dark-line bg-dark-panel rounded-md text-dark-text snap-start">Cool stuff</span>
+
         <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
-           class="relative w-24 h-12 overflow-hidden border border-dark-line">
-          <img src="{{ '/assets/images/Windows_2021_print.png' | relative_url }}" alt="Windows 11" class="absolute inset-0 w-full h-full object-fill">
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="absolute inset-0 w-full h-full object-fill">
+        </a>
+        <a href="https://focusrite.com" target="_blank" rel="noopener"
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/focusrite.png" alt="Focusrite" class="absolute inset-0 w-full h-full object-cover">
+        </a>
+        <a href="https://www.intel.com" target="_blank" rel="noopener"
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/intel.png" alt="Intel" class="absolute inset-0 w-full h-full object-cover">
+        </a>
+        <a href="https://www.logitech.com" target="_blank" rel="noopener"
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/logitech.png" alt="Logitech" class="absolute inset-0 w-full h-full object-cover">
+        </a>
+        <a href="https://www.lunarclient.com" target="_blank" rel="noopener"
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/lunarclient.png" alt="Lunar Client" class="absolute inset-0 w-full h-full object-cover">
+        </a>
+        <a href="https://www.nvidia.com" target="_blank" rel="noopener"
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/nvidia.png" alt="NVIDIA" class="absolute inset-0 w-full h-full object-cover">
+        </a>
+        <a href="https://www.shure.com" target="_blank" rel="noopener"
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/shure.png" alt="Shure" class="absolute inset-0 w-full h-full object-cover">
+        </a>
+        <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="absolute inset-0 w-full h-full object-cover">
         </a>
       </div>
 
-      <!-- Article -->
       <article class="p-6 md:p-10">
         {% if page.image %}
           <img src="{{ page.image | relative_url }}" alt="" class="mt-2 mb-6 rounded border border-dark-line" />
@@ -187,24 +198,21 @@
   </div>
 
   <script>
-    // Make the pfp dropdown work on both desktop hover/click and mobile tap
-    (function () {
-      const btn = document.getElementById('pfpToggle');
+    (function(){
       const menu = document.getElementById('pfpMenu');
-      if (!btn || !menu) return;
-
-      const show = () => menu.classList.remove('hidden');
-      const hide = () => menu.classList.add('hidden');
-
-      // Click/tap toggles
-      btn.addEventListener('click', (e) => { e.stopPropagation(); menu.classList.toggle('hidden'); });
-      btn.addEventListener('touchend', (e) => { e.stopPropagation(); menu.classList.toggle('hidden'); });
-
-      // Click-away to close
-      document.addEventListener('click', (e) => {
-        if (!menu.classList.contains('hidden') && !menu.contains(e.target) && e.target !== btn) hide();
-      });
-    }());
+      const desk = document.getElementById('pfpToggle');
+      const mob  = document.getElementById('pfpToggleMobile');
+      function toggle(e){ e?.preventDefault?.(); menu.classList.toggle('hidden'); }
+      function away(e){
+        if(!menu.classList.contains('hidden') &&
+           !menu.contains(e.target) && e.target !== desk && e.target !== mob){
+          menu.classList.add('hidden');
+        }
+      }
+      desk?.addEventListener('click', toggle);
+      mob?.addEventListener('click', toggle);
+      document.addEventListener('click', away);
+    })();
   </script>
 </body>
 </html>
