@@ -2,26 +2,6 @@
 (function () {
   const $ = (sel) => document.querySelector(sel);
 
-  // 1) PFP dropdown
-  const pfpToggle = $("#pfpToggle");
-  const pfpMenu   = $("#pfpMenu");
-
-  if (pfpToggle && pfpMenu) {
-    pfpToggle.addEventListener("click", (e) => {
-      e.stopPropagation();
-      pfpMenu.classList.toggle("hidden");
-    });
-    document.addEventListener("click", (e) => {
-      if (!pfpMenu.classList.contains("hidden")) {
-        const inside = pfpMenu.contains(e.target) || pfpToggle.contains(e.target);
-        if (!inside) pfpMenu.classList.add("hidden");
-      }
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") pfpMenu.classList.add("hidden");
-    });
-  }
-
   // 2) Keep header/left-rail border lines perfectly aligned
   function syncHeights() {
     const p = $("#leftRail .pfpH");
