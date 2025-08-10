@@ -26,6 +26,7 @@
             'dark-text': '#e7efff',
             'dark-muted': '#9fb2de',
             'dark-accent': '#59a3ff',
+            'tile-bg': '#111a33' /* lighter dark for logo contrast */
           }
         }
       }
@@ -33,7 +34,7 @@
   </script>
 
   <style>
-    :root{ --pfpH:176px; }        /* shared height so the header rule lines up with sidebar rule */
+    :root{ --pfpH:176px; }        /* shared height so header rule lines up with sidebar rule */
 
     html, body { overflow: visible; }
     body { font-family: 'IBM Plex Mono', monospace; }
@@ -41,22 +42,22 @@
     /* Blog-only view hides About */
     body.blog-mode #about { display: none; }
 
-    /* Sidebar tiles: SQUARE corners (no rounding) */
+    /* Sidebar tiles (square corners) */
     .tile-btn{
       position: relative;
       height: 64px; /* h-16 */
       overflow: hidden;
-      border-radius: 0;
-      background: #0d152b;
+      border-radius: 0;              /* square */
+      background: var(--tile-bg, #111a33);
       display: block;
     }
     .tile-img{
       position:absolute; inset:0;
       width:100%; height:100%;
-      object-fit:cover; object-position:center;
+      object-fit:cover;              /* good default */
       display:block;
     }
-    /* Force Windows to fill (squish) to the box exactly */
+    /* Force Windows to fill (squish) exactly */
     .tile-windows .tile-img{ object-fit:fill; }
 
     /* Dropdown items */
@@ -66,28 +67,25 @@
     /* Align header + sidebar horizontal rule perfectly by sharing height */
     .pfpH { height: var(--pfpH); }
 
-    /* Clamp post preview to ~6 lines on the list page */
-    .excerpt-clamp{
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 6;
-      overflow: hidden;
-      /* sensible fallback if line-clamp isn’t supported */
-      line-height: 1.5;
-      max-height: calc(1.5em * 6);
-      word-break: break-word;
-    }
+    /* Ensure true 1:1 on mobile PFP */
+    .aspect-square { aspect-ratio: 1 / 1; }
 
     /* Mobile: hide sidebar; show compact icon row */
     @media (max-width: 767px){
       #leftRail { display:none; }
       #mobileCool { display:flex; }
     }
+
+    /* Mobile icon scroller niceties */
+    .scrollbar-none::-webkit-scrollbar{ display:none; }
+    .scrollbar-none{ -ms-overflow-style:none; scrollbar-width:none; }
   </style>
 
   <!-- libs for About rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
+  <script defer src="/assets/main.js"></script>
 </head>
 <body class="bg-dark-bg text-dark-text antialiased">
 
@@ -99,16 +97,16 @@
 
         <!-- PFP (click = dropdown) -->
         <div class="pfpH border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
-          <button id="pfpToggle" class="rounded-xl outline-none focus:ring-2 focus:ring-dark-accent">
+          <button id="pfpToggle" class="outline-none focus:ring-2 focus:ring-dark-accent">
             <img
               src="/assets/images/channels4_profile.jpg"
               alt="Profile picture"
-              class="w-36 h-36 rounded-xl object-cover border-2 border-dark-line hover:border-dark-accent transition-colors"
+              class="w-36 h-36 aspect-square object-cover rounded-xl border-2 border-dark-line hover:border-dark-accent transition-colors"
             >
           </button>
         </div>
 
-        <!-- Dropdown menu (works on desktop & mobile) -->
+        <!-- Dropdown menu -->
         <div id="pfpMenu"
              class="hidden absolute left-2 top-[170px] z-50 w-40 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
           <a href="https://youtube.com/wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
@@ -124,19 +122,24 @@
             <span class="text-lg font-semibold text-dark-text">Cool stuff</span>
           </div>
 
-          <!-- Zen tile (square) -->
+          <!-- Zen -->
           <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" title="Zen Browser"
-             class="tile-btn w-full border-b-2 border-dark-line">
+             class="tile-btn w-full border-b-2 border-dark-line" style="--tile-bg:#111a33">
             <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="tile-img">
           </a>
 
-          <!-- Windows tile (square; squish to fit) -->
+          <!-- Windows (squish) -->
           <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" title="Windows 11"
-             class="tile-btn tile-windows w-full border-b-2 border-dark-line">
+             class="tile-btn tile-windows w-full border-b-2 border-dark-line" style="--tile-bg:#111a33">
             <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="tile-img">
           </a>
 
-          <!-- Placeholder -->
+          <!-- You can add more buttons like these: -->
+          <!-- <a href="https://example.com" class="tile-btn w-full border-b-2 border-dark-line" style="--tile-bg:#111a33">
+               <img src="/assets/images/intel.png" alt="Intel" class="tile-img">
+               </a> -->
+
+          <!-- Placeholder text tile -->
           <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
             <span class="text-xl text-dark-muted">Button 4</span>
           </div>
@@ -146,12 +149,13 @@
 
     <!-- MAIN -->
     <main class="flex-1">
-      <!-- Header (shares height with PFP tile so the border lines up perfectly) -->
-      <header class="pfpH px-6 md:px-10 border-b-2 border-dark-line flex items-center">
-        <div class="flex items-center gap-4 md:hidden">
-          <!-- small pfp for mobile -->
-          <button id="pfpToggleMobile" class="rounded-lg border border-dark-line">
-            <img src="/assets/images/channels4_profile.jpg" alt="Profile picture" class="h-10 w-10 rounded-lg pointer-events-none">
+      <!-- Header (shares height with PFP tile so border lines align) -->
+      <header class="pfpH px-4 sm:px-6 md:px-10 border-b-2 border-dark-line flex items-center">
+        <div class="flex items-center gap-3 md:hidden">
+          <!-- small pfp for mobile, forced 1:1 -->
+          <button id="pfpToggleMobile" class="outline-none">
+            <img src="/assets/images/channels4_profile.jpg" alt="Profile picture"
+                 class="h-10 w-10 aspect-square object-cover rounded-lg border border-dark-line">
           </button>
           <div>
             <h1 class="text-2xl font-bold text-white">Woodrum's Page</h1>
@@ -164,16 +168,29 @@
         </div>
       </header>
 
-      <!-- Mobile compact icons (replaces sidebar on small screens) -->
-      <div id="mobileCool" class="hidden p-3 gap-3 border-b-2 border-dark-line">
+      <!-- Mobile compact icons (swipeable row) -->
+      <div id="mobileCool"
+           class="hidden px-4 py-3 border-b-2 border-dark-line gap-3 overflow-x-auto whitespace-nowrap scrollbar-none snap-x snap-mandatory">
+        <span class="inline-flex items-center justify-center h-12 px-3 border border-dark-line bg-dark-panel rounded-md text-dark-text snap-start">Cool stuff</span>
+
         <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener"
-           class="relative w-28 h-12 overflow-hidden border border-dark-line">
-          <img src="/assets/images/zen-browser.png" alt="Zen Browser" class="absolute inset-0 w-full h-full object-cover">
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/zen-browser.png" alt="Zen Browser"
+               class="absolute inset-0 w-full h-full object-cover">
         </a>
+
         <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
-           class="relative w-28 h-12 overflow-hidden border border-dark-line">
-          <img src="/assets/images/Windows_2021_print.png" alt="Windows 11" class="absolute inset-0 w-full h-full object-fill">
+           class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/Windows_2021_print.png" alt="Windows 11"
+               class="absolute inset-0 w-full h-full object-fill">
         </a>
+
+        <!-- Add more by duplicating this pattern; they’ll scroll horizontally -->
+        <!--
+        <a href="https://example.com" class="relative inline-block w-28 h-12 overflow-hidden border border-dark-line rounded-md bg-[color:#111a33] snap-start">
+          <img src="/assets/images/intel.png" alt="Intel" class="absolute inset-0 w-full h-full object-cover">
+        </a>
+        -->
       </div>
 
       <!-- About -->
@@ -199,16 +216,12 @@
                   <a href="{{ post.url | relative_url }}" class="hover:underline">{{ post.title }}</a>
                 </h3>
                 <p class="text-sm text-dark-muted mt-1">{{ post.date | date: "%B %-d, %Y" }}</p>
-
                 {% if post.image %}
-                  <img src="{{ post.image | relative_url }}" alt="" class="mt-4 border border-dark-line">
+                  <img src="{{ post.image | relative_url }}" alt="" class="mt-4 rounded border border-dark-line">
                 {% endif %}
-
-                <!-- CLAMPED preview -->
-                <div class="mt-3 text-dark-muted leading-relaxed max-w-prose excerpt-clamp">
+                <div class="mt-3 text-dark-muted leading-relaxed max-w-prose">
                   {{ post.excerpt }}
                 </div>
-
                 <div class="mt-2">
                   <a href="{{ post.url | relative_url }}" class="text-dark-accent underline">Read more →</a>
                 </div>
@@ -220,39 +233,28 @@
     </main>
   </div>
 
-  <!-- Minimal JS for About + PFP dropdown (desktop + mobile) -->
   <script>
-    // About content (Markdown from assets/content/about.md)
-    (async () => {
-      const el = document.getElementById('aboutBody');
-      try {
-        const res = await fetch('/assets/content/about.md?' + Date.now());
-        if (!res.ok) throw new Error('fetch failed');
-        const md = await res.text();
-        el.innerHTML = DOMPurify.sanitize(marked.parse(md));
-      } catch {
-        el.textContent = "Couldn't load About content.";
+    // Reuse same dropdown logic on mobile and desktop PFP
+    (function(){
+      const menu = document.getElementById('pfpMenu');
+      const desktopBtn = document.getElementById('pfpToggle');
+      const mobileBtn  = document.getElementById('pfpToggleMobile');
+
+      function toggleMenu(e){
+        e?.preventDefault?.();
+        menu.classList.toggle('hidden');
       }
+      function outside(e){
+        if(!menu.classList.contains('hidden')){
+          if(!menu.contains(e.target) && e.target !== desktopBtn && e.target !== mobileBtn){
+            menu.classList.add('hidden');
+          }
+        }
+      }
+      desktopBtn?.addEventListener('click', toggleMenu);
+      mobileBtn?.addEventListener('click', toggleMenu);
+      document.addEventListener('click', outside);
     })();
-
-    // Dropdown toggle (desktop + mobile)
-    const menu  = document.getElementById('pfpMenu');
-    const btn1  = document.getElementById('pfpToggle');
-    const btn2  = document.getElementById('pfpToggleMobile');
-
-    const toggleMenu = (e) => {
-      e?.preventDefault?.();
-      menu.classList.toggle('hidden');
-    };
-
-    btn1?.addEventListener('click', toggleMenu);
-    btn2?.addEventListener('click', toggleMenu);
-
-    document.addEventListener('click', (e) => {
-      const insideBtn = e.target.closest('#pfpToggle, #pfpToggleMobile');
-      const insideMenu = e.target.closest('#pfpMenu');
-      if (!insideBtn && !insideMenu) menu.classList.add('hidden');
-    }, { passive: true });
   </script>
 </body>
 </html>
