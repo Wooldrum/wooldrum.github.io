@@ -25,8 +25,7 @@
             'dark-text': '#e7efff',
             'dark-muted': '#9fb2de',
             'dark-accent': '#59a3ff',
-            /* slightly lighter panel to help transparent logos pop */
-            'dark-contrast': '#132343'
+            'dark-contrast': '#132343' /* helps transparent logos pop */
           }
         }
       }
@@ -34,74 +33,60 @@
   </script>
 
   <style>
-    :root{ --pfpH:176px; } /* shared height to align desktop header rule with sidebar */
+    :root{ --pfpH:176px; } /* keep desktop header rule aligned with sidebar */
     html, body { overflow: visible; }
     body { font-family: 'IBM Plex Mono', monospace; }
 
     /* Blog-only view hides About */
     body.blog-mode #about { display: none; }
 
-    /* Sidebar tiles: square, fill box exactly */
+    /* Sidebar tiles: square, always fill box */
     .tile-btn{
       position: relative;
       height: 64px; /* h-16 */
       overflow: hidden;
-      background: #132343;            /* dark-contrast */
+      background: #132343;
       display: block;
-      border-radius: 0;                /* square corners */
+      border-radius: 0;
     }
     .tile-img{
       position:absolute; inset:0;
       width:100%; height:100%;
-      object-fit:fill;                 /* force exact fit (distort if needed) */
+      object-fit:fill; /* force exact fit (distort if needed) */
       display:block;
     }
 
-    /* Menu dropdown items */
+    /* Dropdown items */
     .menu-item { display:block; padding:.5rem .75rem; border-radius:.5rem; }
     .menu-item:hover { background:#0a1020; }
 
-    /* Keep header + sidebar rules aligned on desktop */
     .pfpH { height: var(--pfpH); }
 
-    /* Mobile: hide sidebar; show compact icon strip; relax header height */
+    /* Mobile layout */
     @media (max-width: 767px){
       #leftRail { display:none; }
       #mobileCool { display:flex; }
       .pfpH { height:auto; }
     }
 
-    /* iOS safe-area for the header */
+    /* iOS safe-area */
     header.safe-top{
       padding-top: env(safe-area-inset-top);
       padding-top: constant(safe-area-inset-top);
     }
 
-    /* Mobile icon strip styling */
+    /* Mobile icon strip */
     #mobileCool{
-      overflow-x:auto;
-      -webkit-overflow-scrolling:touch;
-      gap:.75rem;
+      overflow-x:auto; -webkit-overflow-scrolling:touch; gap:.75rem;
     }
-    /* hide scrollbar (keeps scrollability) */
     #mobileCool::-webkit-scrollbar{ display:none; }
     #mobileCool{ scrollbar-width:none; }
-
     .micon{
-      position:relative;
-      flex:0 0 auto;
-      width:6rem;   /* ~96px */
-      height:3rem;  /* ~48px */
-      border:1px solid #22345b;
-      background:#132343; /* contrast bg */
-      overflow:hidden;
+      position:relative; flex:0 0 auto;
+      width:6rem; height:3rem;
+      border:1px solid #22345b; background:#132343; overflow:hidden;
     }
-    .micon img{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit:fill; /* same ‘fill box exactly’ behavior */
-      display:block;
-    }
+    .micon img{ position:absolute; inset:0; width:100%; height:100%; object-fit:fill; display:block; }
   </style>
 
   <!-- libs for About rendering -->
@@ -118,7 +103,7 @@
     <aside id="leftRail" class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
       <div class="flex flex-row md:flex-col relative">
 
-        <!-- PFP (click = dropdown) -->
+        <!-- PFP (desktop dropdown trigger) -->
         <div class="pfpH border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
           <button id="pfpToggle" class="rounded-xl outline-none focus:ring-2 focus:ring-dark-accent">
             <img
@@ -129,7 +114,7 @@
           </button>
         </div>
 
-        <!-- Dropdown -->
+        <!-- Desktop dropdown -->
         <div id="pfpMenu"
              class="hidden absolute left-2 top-[170px] z-50 w-40 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
           <a href="https://youtube.com/wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
@@ -138,12 +123,12 @@
           <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
         </div>
 
-        <!-- Sidebar label (desktop only) -->
+        <!-- Sidebar label -->
         <div class="h-16 w-full flex items-center justify-center border-b-2 border-dark-line">
           <span class="text-lg font-semibold text-dark-text">Cool stuff</span>
         </div>
 
-        <!-- ORDERED TILES (square, fill exactly) -->
+        <!-- ORDERED TILES -->
         <nav class="flex flex-row md:flex-col w-full">
           <!-- Windows -->
           <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener"
@@ -200,47 +185,46 @@
 
     <!-- MAIN -->
     <main class="flex-1">
-      <!-- Header (desktop aligns with sidebar; mobile auto height and safe top) -->
-      <header class="pfpH safe-top px-6 md:px-10 border-b-2 border-dark-line flex items-center">
-        <!-- Mobile header -->
+      <!-- Header -->
+      <header class="pfpH safe-top px-6 md:px-10 border-b-2 border-dark-line flex items-center justify-between">
+        <!-- Mobile header (with its own dropdown trigger) -->
         <div class="flex items-center gap-4 md:hidden">
-          <img src="/assets/images/channels4_profile.jpg" alt="Profile picture"
-               class="h-10 w-10 rounded-lg border border-dark-line">
+          <button id="pfpToggleMobile" class="rounded-lg outline-none focus:ring-2 focus:ring-dark-accent">
+            <img src="/assets/images/channels4_profile.jpg" alt="Profile picture"
+                 class="h-10 w-10 rounded-lg border border-dark-line">
+          </button>
           <div class="min-w-0">
             <h1 class="text-2xl font-bold text-white">Woodrum's Page</h1>
             <p class="text-sm text-dark-muted -mt-1">Welcome to my personal corner of the internet.</p>
           </div>
         </div>
-        <!-- Desktop header -->
+        <!-- Desktop title -->
         <div class="hidden md:block">
           <h1 class="text-4xl md:text-5xl font-bold text-white">Woodrum's Page</h1>
           <p class="mt-2 text-lg text-dark-muted">Welcome to my personal corner of the internet.</p>
         </div>
+
+        <!-- Mobile dropdown (separate so it works even when sidebar is hidden) -->
+        <div id="pfpMenuMobile"
+             class="hidden md:hidden fixed top-[60px] left-3 z-50 w-44 bg-dark-panel border-2 border-dark-line rounded-xl shadow-lg">
+          <a href="https://youtube.com/wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">YouTube</a>
+          <a href="https://discord.gg/WmZ5DVt5N2" target="_blank" rel="noopener" class="menu-item text-dark-muted">Discord</a>
+          <a href="https://github.com/Wooldrum" target="_blank" rel="noopener" class="menu-item text-dark-muted">GitHub</a>
+          <a href="/admin/" class="menu-item text-dark-accent font-semibold">Admin</a>
+        </div>
       </header>
 
-      <!-- MOBILE ICON STRIP (no "Cool stuff" label, horizontally scrollable) -->
+      <!-- Mobile icon strip -->
       <div id="mobileCool" class="hidden px-3 py-3 border-b-2 border-dark-line">
         <a href="https://www.microsoft.com/windows/windows-11" target="_blank" rel="noopener" class="micon">
           <img src="/assets/images/Windows_2021_print.png" alt="Windows 11">
         </a>
-        <a href="#" class="micon">
-          <img src="/assets/images/focusrite.png" alt="Focusrite">
-        </a>
-        <a href="#" class="micon">
-          <img src="/assets/images/intel.png" alt="Intel">
-        </a>
-        <a href="#" class="micon">
-          <img src="/assets/images/logitech.png" alt="Logitech">
-        </a>
-        <a href="#" class="micon">
-          <img src="/assets/images/lunarclient.png" alt="Lunar Client">
-        </a>
-        <a href="#" class="micon">
-          <img src="/assets/images/nvidia.png" alt="NVIDIA">
-        </a>
-        <a href="#" class="micon">
-          <img src="/assets/images/shure.png" alt="Shure">
-        </a>
+        <a href="#" class="micon"><img src="/assets/images/focusrite.png" alt="Focusrite"></a>
+        <a href="#" class="micon"><img src="/assets/images/intel.png" alt="Intel"></a>
+        <a href="#" class="micon"><img src="/assets/images/logitech.png" alt="Logitech"></a>
+        <a href="#" class="micon"><img src="/assets/images/lunarclient.png" alt="Lunar Client"></a>
+        <a href="#" class="micon"><img src="/assets/images/nvidia.png" alt="NVIDIA"></a>
+        <a href="#" class="micon"><img src="/assets/images/shure.png" alt="Shure"></a>
         <a href="https://zen-browser.app/download/?twilight" target="_blank" rel="noopener" class="micon">
           <img src="/assets/images/zen-browser.png" alt="Zen Browser">
         </a>
@@ -287,7 +271,7 @@
   </div>
 
   <script>
-    // Load About from /assets/content/about.md
+    // Load About content
     (async () => {
       try {
         const res = await fetch('/assets/content/about.md', { cache: 'no-store' });
@@ -299,18 +283,30 @@
       }
     })();
 
-    // PFP dropdown (desktop + mobile tap)
+    // Dropdowns: desktop + mobile
     (function () {
-      const btn = document.getElementById('pfpToggle');
-      const menu = document.getElementById('pfpMenu');
-      if (!btn || !menu) return;
-      const toggle = (e)=>{ e.stopPropagation(); menu.classList.toggle('hidden'); };
-      btn.addEventListener('click', toggle);
-      btn.addEventListener('touchend', toggle);
-      document.addEventListener('click', e=>{
-        if (!menu.classList.contains('hidden') && !menu.contains(e.target) && e.target!==btn) {
-          menu.classList.add('hidden');
-        }
+      const desktopBtn  = document.getElementById('pfpToggle');
+      const desktopMenu = document.getElementById('pfpMenu');
+      const mobileBtn   = document.getElementById('pfpToggleMobile');
+      const mobileMenu  = document.getElementById('pfpMenuMobile');
+
+      const toggle = (menu) => menu && menu.classList.toggle('hidden');
+      const hide   = (menu) => menu && menu.classList.add('hidden');
+
+      if (desktopBtn && desktopMenu) {
+        const on = (e)=>{ e.stopPropagation(); toggle(desktopMenu); hide(mobileMenu); };
+        desktopBtn.addEventListener('click', on);
+        desktopBtn.addEventListener('touchend', on);
+      }
+      if (mobileBtn && mobileMenu) {
+        const on = (e)=>{ e.stopPropagation(); toggle(mobileMenu); hide(desktopMenu); };
+        mobileBtn.addEventListener('click', on);
+        mobileBtn.addEventListener('touchend', on);
+      }
+
+      document.addEventListener('click', (e)=>{
+        if (desktopMenu && !desktopMenu.contains(e.target) && e.target !== desktopBtn) hide(desktopMenu);
+        if (mobileMenu  && !mobileMenu.contains(e.target)  && e.target !== mobileBtn)  hide(mobileMenu);
       });
     }());
   </script>
