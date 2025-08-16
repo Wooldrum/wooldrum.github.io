@@ -8,6 +8,7 @@ const POSTS_DIR = "_posts";
 const IMAGES_DIR = "assets/images";
 const ABOUT_PATH = "assets/content/about.md";
 const LOGIN_PAGE = "/admin/login.html";
+const TAGS_PATH = "_data/tags.yml";
 
 // DOM
 const tabBtns = document.querySelectorAll(".tab-btn");
@@ -26,6 +27,10 @@ const imgFileEl = document.getElementById("imgFile");
 const imgPathEl = document.getElementById("imgPath");
 const bodyEl = document.getElementById("body");
 const previewEl = document.getElementById("preview");
+const tagsContainer = document.getElementById("tagsContainer");
+const newTagNameEl = document.getElementById("newTagName");
+const newTagColorEl = document.getElementById("newTagColor");
+const addTagBtn = document.getElementById("addTagBtn");
 
 const assetUploadEl = document.getElementById("assetUpload");
 const refreshAssetsBtn = document.getElementById("refreshAssets");
@@ -45,6 +50,8 @@ let token = null;
 let currentPath = null;
 let currentSha = null;
 let aboutSha = null;
+let tagsSha = null;
+let tagsData = {};
 
 // Helpers
 const ghBase = `https://api.github.com/repos/${OWNER}/${REPO}`;
@@ -73,11 +80,17 @@ function parseFrontmatter(md) {
   const fm = {};
   yaml.split("\n").forEach((line) => {
     const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-    if (m) fm[m[1]] = m[2].replace(/^"(.*)"$/, "$1");
+    if (!m) return;
+    let key = m[1];
+    let val = m[2].replace(/^"(.*)"$/, "$1");
+    if (key === "tags") {
+      val = val.replace(/^\[|\]$/g, "").split(",").map(s => s.trim()).filter(Boolean);
+    }
+    fm[key] = val;
   });
   return { fm, body };
 }
-function buildFrontmatter({ title, date, image, body }) {
+function buildFrontmatter({ title, date, image, tags, body }) {
   const iso = new Date(date || Date.now()).toISOString();
   const lines = [
     "---",
@@ -87,6 +100,7 @@ function buildFrontmatter({ title, date, image, body }) {
     `date: ${iso}`,
   ];
   if (image) lines.push(`image: ${image}`);
+  if (tags && tags.length) lines.push(`tags: [${tags.join(', ')}]`);
   lines.push("---", "", body || "");
   return lines.join("\n") + "\n";
 }
@@ -94,6 +108,64 @@ function md2html(md) {
   try { return DOMPurify.sanitize(marked.parse(md || "")); }
   catch { return "<p>Preview unavailable.</p>"; }
 }
+
+function parseTagsYml(text) {
+  const obj = {};
+  text.split(/\r?\n/).forEach(line => {
+    const m = line.match(/^([A-Za-z0-9_-]+):\s*"?(#[A-Fa-f0-9]{3,6})"?$/);
+    if (m) obj[m[1]] = m[2];
+  });
+  return obj;
+}
+function buildTagsYml(obj) {
+  return Object.entries(obj).map(([k,v]) => `${k}: "${v}"`).join("\n") + "\n";
+}
+function renderTags(selected=[]) {
+  tagsContainer.innerHTML = "";
+  Object.entries(tagsData).forEach(([name,color]) => {
+    const label = document.createElement('label');
+    label.className = 'flex items-center gap-1';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = name;
+    cb.className = 'tag-cb';
+    if (selected.includes(name)) cb.checked = true;
+    const span = document.createElement('span');
+    span.className = 'text-xs px-2 py-1 rounded-full';
+    span.style.backgroundColor = color;
+    span.textContent = name;
+    label.append(cb, span);
+    tagsContainer.appendChild(label);
+  });
+}
+async function loadTags(selected=[]) {
+  try {
+    const j = await getFile(TAGS_PATH);
+    tagsSha = j.sha;
+    tagsData = parseTagsYml(atob(j.content));
+  } catch {
+    tagsSha = "";
+    tagsData = {};
+  }
+  renderTags(selected);
+}
+function selectedTags() {
+  return Array.from(tagsContainer.querySelectorAll('input.tag-cb:checked')).map(cb => cb.value);
+}
+addTagBtn?.addEventListener('click', async () => {
+  const name = (newTagNameEl.value || '').trim();
+  const color = newTagColorEl.value || '#59a3ff';
+  if (!name) return;
+  if (tagsData[name]) return alert('Tag exists.');
+  tagsData[name] = color;
+  const yml = buildTagsYml(tagsData);
+  const b64 = btoa(unescape(encodeURIComponent(yml)));
+  const msg = tagsSha ? 'Update tags.yml' : 'Create tags.yml';
+  const res = await putFile(TAGS_PATH, b64, msg, tagsSha || null);
+  tagsSha = res.content.sha;
+  newTagNameEl.value = '';
+  await loadTags(selectedTags());
+});
 
 // Auth
 function setAuthedUI(on) {
@@ -210,6 +282,9 @@ async function loadPost(path) {
   dateEl.value = localDateTimeValue(fm.date ? new Date(fm.date) : new Date());
   imgPathEl.value = fm.image || "";
   bodyEl.value = body || "";
+  const tags = fm.tags || [];
+  if (new Date(fm.date || Date.now()) < new Date('2025-08-16') && !tags.includes('old')) tags.push('old');
+  await loadTags(tags);
   updatePreview();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -221,6 +296,7 @@ function resetEditor() {
   imgPathEl.value = "";
   bodyEl.value = "";
   setDateNow();
+  loadTags([]);
   updatePreview();
 }
 newPostBtn.addEventListener("click", resetEditor);
@@ -245,6 +321,11 @@ async function savePost() {
     title,
     date: d.toISOString(),
     image: imgPathEl.value.trim() || undefined,
+    tags: (() => {
+      let t = selectedTags();
+      if (d < new Date('2025-08-16')) t = t.concat('old');
+      return Array.from(new Set(t));
+    })(),
     body: bodyEl.value,
   });
   const b64 = btoa(unescape(encodeURIComponent(content)));
@@ -436,6 +517,7 @@ resetAboutBtn.addEventListener("click", () => { aboutBodyEl.value = ""; updateAb
   ensureAuthed();
   setActiveTab("posts");
   dateEl.value = localDateTimeValue(new Date()); // auto-fill now
+  await loadTags([]);
   updatePreview();
   await listPosts();
 })();

@@ -107,6 +107,14 @@
             </div>
           </div>
 
+          <label class="block text-sm text-dark-muted mt-4 mb-1">Tags</label>
+          <div id="tagsContainer" class="flex flex-wrap gap-2 mb-2"></div>
+          <div class="flex items-center gap-2 mb-4">
+            <input id="newTagName" type="text" class="input px-2 py-1" placeholder="new tag" />
+            <input id="newTagColor" type="color" value="#59a3ff" class="h-9 w-9 rounded" />
+            <button id="addTagBtn" class="btn px-2 py-1">Add</button>
+          </div>
+
           <div class="toolbar flex flex-wrap gap-2 mt-4">
             <button data-cmd="bold">B</button>
             <button data-cmd="italic"><em>I</em></button>
