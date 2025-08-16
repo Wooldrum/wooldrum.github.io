@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Tag: {{ page.tag }} — Woodrum's Page</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          spacing: { '44': '11rem' },
+          colors: {
+            'dark-bg': '#0a1020',
+            'dark-panel': '#0d152b',
+            'dark-line': '#22345b',
+            'dark-text': '#e7efff',
+            'dark-muted': '#9fb2de',
+            'dark-accent': '#59a3ff',
+            'dark-contrast': '#132343'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'IBM Plex Mono', monospace; }
+  </style>
+</head>
+<body class="bg-dark-bg text-dark-text antialiased">
+  <div class="max-w-4xl mx-auto p-6 md:p-10">
+    <h1 class="text-3xl md:text-4xl font-bold text-white mb-6">Posts tagged "{{ page.tag }}"</h1>
+    {% assign tagged = page.posts %}
+    {% if tagged == empty %}
+      <p class="text-dark-muted">No posts found.</p>
+    {% else %}
+      <div class="space-y-8">
+        {% for post in tagged %}
+          <article class="border-t border-dark-line pt-6">
+            <h2 class="text-2xl font-semibold text-dark-accent">
+              <a href="{{ post.url | relative_url }}" class="hover:underline">{{ post.title }}</a>
+            </h2>
+            <p class="text-sm text-dark-muted mt-1">{{ post.date | date: "%B %-d, %Y" }}</p>
+            {% assign p_tags = post.tags %}
+            {% if p_tags == nil %}{% assign p_tags = '' | split: ',' %}{% endif %}
+            {% assign old_threshold = '2025-08-16' | date: '%s' %}
+            {% assign post_ts = post.date | date: '%s' %}
+            {% if post_ts < old_threshold %}
+              {% assign p_tags = p_tags | push: 'old' %}
+            {% endif %}
+            {% if p_tags != empty %}
+              <div class="mt-2 flex flex-wrap gap-2">
+                {% for tag in p_tags %}
+                  {% assign color = site.data.tags[tag] | default: '#59a3ff' %}
+                  <a href="/tags/{{ tag }}/" class="text-xs font-medium px-2 py-1 rounded-full text-black" style="background-color: {{ color }};">{{ tag }}</a>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if post.image %}
+              <img src="{{ post.image | relative_url }}" alt="" class="mt-4 rounded border border-dark-line">
+            {% endif %}
+            <div class="mt-3 text-dark-muted leading-relaxed max-w-prose">
+              {{ post.content | markdownify | strip_html | truncatewords: 120 }}
+            </div>
+            <div class="mt-2">
+              <a href="{{ post.url | relative_url }}" class="text-dark-accent underline">Read more →</a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
