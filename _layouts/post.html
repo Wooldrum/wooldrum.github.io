@@ -75,7 +75,7 @@
 
   <div class="flex flex-col md:flex-row min-h-screen">
 
-    <aside id="leftRail" class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen">
+    <aside id="leftRail" class="w-full md:w-48 bg-dark-panel border-r-2 border-dark-line md:sticky md:top-0 md:h-screen md:overflow-y-auto">
       <div class="flex flex-row md:flex-col relative">
 
         <div class="pfpH border-b-2 border-dark-line flex-shrink-0 flex items-center justify-center">
@@ -214,33 +214,6 @@
     </main>
   </div>
 
-  <script>
-    // Dropdowns: desktop + mobile
-    (function () {
-      const desktopBtn  = document.getElementById('pfpToggle');
-      const desktopMenu = document.getElementById('pfpMenu');
-      const mobileBtn   = document.getElementById('pfpToggleMobile');
-      const mobileMenu  = document.getElementById('pfpMenuMobile');
-
-      const toggle = (menu) => menu && menu.classList.toggle('hidden');
-      const hide   = (menu) => menu && menu.classList.add('hidden');
-
-      if (desktopBtn && desktopMenu) {
-        const on = (e)=>{ e.stopPropagation(); toggle(desktopMenu); hide(mobileMenu); };
-        desktopBtn.addEventListener('click', on);
-        desktopBtn.addEventListener('touchend', on);
-      }
-      if (mobileBtn && mobileMenu) {
-        const on = (e)=>{ e.stopPropagation(); toggle(mobileMenu); hide(desktopMenu); };
-        mobileBtn.addEventListener('click', on);
-        mobileBtn.addEventListener('touchend', on);
-      }
-
-      document.addEventListener('click', (e)=>{
-        if (desktopMenu && !desktopMenu.contains(e.target) && e.target !== desktopBtn) hide(desktopMenu);
-        if (mobileMenu  && !mobileMenu.contains(e.target)  && e.target !== mobileBtn)  hide(mobileMenu);
-      });
-    }());
-  </script>
+  <!-- main.js handles dropdowns -->
 </body>
 </html>
