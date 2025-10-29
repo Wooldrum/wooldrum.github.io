@@ -2,25 +2,44 @@
 (function () {
   const $ = (sel) => document.querySelector(sel);
 
-  // 1) PFP dropdown
-  const pfpToggle = $("#pfpToggle");
-  const pfpMenu   = $("#pfpMenu");
+  // 1) PFP dropdowns (desktop + mobile)
+  const pfpToggle       = $("#pfpToggle");
+  const pfpMenu         = $("#pfpMenu");
+  const pfpToggleMobile = $("#pfpToggleMobile");
+  const pfpMenuMobile   = $("#pfpMenuMobile");
 
-  if (pfpToggle && pfpMenu) {
-    pfpToggle.addEventListener("click", (e) => {
+  function bindDropdown(btn, menu, hideMenus = []) {
+    if (!btn || !menu) return;
+    const on = (e) => {
       e.stopPropagation();
-      pfpMenu.classList.toggle("hidden");
-    });
-    document.addEventListener("click", (e) => {
-      if (!pfpMenu.classList.contains("hidden")) {
-        const inside = pfpMenu.contains(e.target) || pfpToggle.contains(e.target);
-        if (!inside) pfpMenu.classList.add("hidden");
+      menu.classList.toggle("hidden");
+      hideMenus.forEach((m) => m && m.classList.add("hidden"));
+    };
+    btn.addEventListener("click", on);
+    btn.addEventListener("touchend", on);
+  }
+
+  bindDropdown(pfpToggle, pfpMenu, [pfpMenuMobile]);
+  bindDropdown(pfpToggleMobile, pfpMenuMobile, [pfpMenu]);
+
+  document.addEventListener("click", (e) => {
+    [
+      [pfpMenu, pfpToggle],
+      [pfpMenuMobile, pfpToggleMobile],
+    ].forEach(([menu, toggle]) => {
+      if (menu && !menu.classList.contains("hidden")) {
+        const inside = menu.contains(e.target) || (toggle && toggle.contains(e.target));
+        if (!inside) menu.classList.add("hidden");
       }
     });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") pfpMenu.classList.add("hidden");
-    });
-  }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (pfpMenu) pfpMenu.classList.add("hidden");
+      if (pfpMenuMobile) pfpMenuMobile.classList.add("hidden");
+    }
+  });
 
   // 2) Keep header/left-rail border lines perfectly aligned
   function syncHeights() {
