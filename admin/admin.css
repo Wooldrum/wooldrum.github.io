@@ -1,6 +1,3 @@
-/* ===========
-   Woodrum Admin Theme (Decap CMS)
-   =========== */
 
 /* Layout surfaces */
 html, body, #app { background: var(--bg) !important; color: var(--text) !important; }
